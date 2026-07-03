@@ -17,7 +17,7 @@ fail() {
 on_error() {
   fail "설치 중 문제가 발생했습니다."
   printf '\033[33m확인해볼 내용:\033[0m\n'
-  printf -- '- 이 스크립트를 codex-ai-service-kit 저장소 안에서 실행했는지 확인하세요.\n'
+  printf -- '- 이 스크립트를 vibe-frame-kit 저장소 안에서 실행했는지 확인하세요.\n'
   printf -- '- 실행 권한이 없다면 다음 명령을 먼저 실행하세요:\n'
   printf '  chmod +x scripts/install.sh\n'
   printf -- '- ~/.codex 폴더에 파일을 쓸 권한이 있는지 확인하세요.\n'
@@ -30,7 +30,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CODEX_DIR="$HOME/.codex"
 TIMESTAMP="$(date +"%Y%m%d-%H%M%S")"
 
-info "codex-ai-service-kit 설치를 시작합니다."
+info "vibe-frame-kit 설치를 시작합니다."
 info "저장소 위치: $REPO_ROOT"
 info "설치 위치: $CODEX_DIR"
 
@@ -84,7 +84,7 @@ for directory_name in "${DIRECTORIES_TO_COPY[@]}"; do
 done
 
 printf '\n'
-success "codex-ai-service-kit 설치가 완료되었습니다."
+success "vibe-frame-kit 설치가 완료되었습니다."
 printf '\033[32m설치된 항목:\033[0m\n'
 printf -- '- ~/.codex/AGENTS.md\n'
 printf -- '- ~/.codex/agents/\n'

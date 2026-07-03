@@ -23,7 +23,7 @@ try {
     $CodexDir = Join-Path $HOME ".codex"
     $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 
-    Write-Info "codex-ai-service-kit 설치를 시작합니다."
+    Write-Info "vibe-frame-kit 설치를 시작합니다."
     Write-Info "저장소 위치: $RepoRoot"
     Write-Info "설치 위치: $CodexDir"
 
@@ -83,7 +83,7 @@ try {
     }
 
     Write-Host ""
-    Write-Success "codex-ai-service-kit 설치가 완료되었습니다."
+    Write-Success "vibe-frame-kit 설치가 완료되었습니다."
     Write-Host "설치된 항목:" -ForegroundColor Green
     Write-Host "- ~/.codex/AGENTS.md"
     Write-Host "- ~/.codex/agents/"
@@ -99,7 +99,7 @@ catch {
     Write-Host "원인: $($_.Exception.Message)" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "확인해볼 내용:" -ForegroundColor Yellow
-    Write-Host "- 이 스크립트를 codex-ai-service-kit 저장소 안에서 실행했는지 확인하세요."
+    Write-Host "- 이 스크립트를 vibe-frame-kit 저장소 안에서 실행했는지 확인하세요."
     Write-Host "- PowerShell 실행 권한 문제라면 다음 명령을 참고하세요:"
     Write-Host "  powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1"
     Write-Host "- ~/.codex 폴더에 파일을 쓸 권한이 있는지 확인하세요."

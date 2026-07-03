@@ -1,4 +1,4 @@
-# codex-ai-service-kit 기본 Skill 목록
+# vibe-frame-kit 기본 Skill 목록
 #
 # 이 파일은 수강생 프로젝트에서 기본적으로 사용할 공통 Skill 이름을 정리합니다.
 # 각 이름은 skills/ 폴더 아래의 Skill 디렉터리 이름과 일치합니다.

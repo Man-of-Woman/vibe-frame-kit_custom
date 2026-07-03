@@ -1,6 +1,6 @@
 # Agent Routing
 
-이 문서는 `codex-ai-service-kit`에서 사용하는 작업 단계별 Skill 라우팅 기준입니다.
+이 문서는 `vibe-frame-kit`에서 사용하는 작업 단계별 Skill 라우팅 기준입니다.
 
 이 Kit는 프로젝트 종류별 라우팅을 사용하지 않습니다. 대신 수강생이 현재 어떤 작업을 하고 있는지에 따라 적절한 Skill을 선택합니다.
 

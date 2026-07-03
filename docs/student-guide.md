@@ -1,12 +1,12 @@
 # 수강생 가이드
 
-이 문서는 재직자 AI 서비스 개발 과정 수강생이 `codex-ai-service-kit`을 설치하고 사용하는 방법을 설명합니다.
+이 문서는 재직자 AI 서비스 개발 과정 수강생이 `vibe-frame-kit`을 설치하고 사용하는 방법을 설명합니다.
 
 Codex가 코드를 대신 전부 만들어주는 도구라고 생각하기보다, 프로젝트를 단계별로 함께 정리하고 구현을 도와주는 개발 보조자라고 생각하면 좋습니다.
 
-## 1. Codex Agent Kit 소개
+## 1. Vibe Frame Kit 소개
 
-Codex Agent Kit는 AI 서비스 프로젝트를 진행할 때 공통 개발 흐름을 따르도록 도와주는 설정 모음입니다.
+Vibe Frame Kit는 AI 서비스 프로젝트를 진행할 때 공통 개발 흐름을 따르도록 도와주는 설정 모음입니다.
 
 이 Kit에는 다음 자료가 포함되어 있습니다.
 
@@ -38,8 +38,8 @@ Windows 사용자는 PowerShell을 사용하는 것을 기준으로 설명합니
 GitHub에 업로드된 저장소를 내려받습니다.
 
 ```powershell
-git clone https://github.com/your-org/codex-ai-service-kit.git
-cd codex-ai-service-kit
+git clone https://github.com/your-org/vibe-frame-kit.git
+cd vibe-frame-kit
 ```
 
 아직 실제 GitHub 주소가 정해지지 않았다면, 강사가 제공한 저장소 주소를 사용합니다.
@@ -47,7 +47,7 @@ cd codex-ai-service-kit
 압축 파일로 받은 경우에는 압축을 풀고 해당 폴더로 이동합니다.
 
 ```powershell
-cd codex-ai-service-kit
+cd vibe-frame-kit
 ```
 
 ## 4. install.ps1 실행 방법

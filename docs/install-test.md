@@ -1,6 +1,6 @@
 # 설치 테스트 절차
 
-이 문서는 `codex-ai-service-kit`이 실제로 설치 가능한지 확인하기 위한 테스트 절차입니다.
+이 문서는 `vibe-frame-kit`이 실제로 설치 가능한지 확인하기 위한 테스트 절차입니다.
 
 Windows와 macOS/Linux 환경을 나누어 테스트합니다.
 
@@ -11,8 +11,8 @@ Windows와 macOS/Linux 환경을 나누어 테스트합니다.
 PowerShell을 열고 테스트용 폴더에서 저장소를 내려받습니다.
 
 ```powershell
-git clone https://github.com/your-org/codex-ai-service-kit.git
-cd codex-ai-service-kit
+git clone https://github.com/your-org/vibe-frame-kit.git
+cd vibe-frame-kit
 ```
 
 실제 수업 저장소 주소가 있다면 `your-org` 부분을 해당 주소로 바꿉니다.
@@ -119,7 +119,7 @@ Codex App을 사용하는 경우에는 `test-ai-service` 폴더를 열고 아래
 ```text
 나는 AI 회의록 요약 서비스를 만들고 싶어.
 이 프로젝트를 요구사항 정의 단계부터 시작해줘.
-Codex Agent Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작성해줘.
+Vibe Frame Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작성해줘.
 ```
 
 확인 기준:
@@ -133,7 +133,7 @@ Codex Agent Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작�
 | 문제 | 점검 방법 |
 | --- | --- |
 | 스크립트 실행이 막힘 | `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1`로 실행했는지 확인합니다. |
-| `scripts\install.ps1`을 찾을 수 없음 | 현재 위치가 `codex-ai-service-kit` 루트인지 확인합니다. |
+| `scripts\install.ps1`을 찾을 수 없음 | 현재 위치가 `vibe-frame-kit` 루트인지 확인합니다. |
 | `~/.codex`에 파일이 없음 | 설치 중 오류 메시지를 확인하고 스크립트를 다시 실행합니다. |
 | 한글이 깨져 보임 | `Get-Content -Encoding UTF8`로 다시 확인합니다. |
 | 기존 `AGENTS.md`가 사라진 것 같음 | `AGENTS.md.backup.*` 파일이 생성되었는지 확인합니다. |
@@ -146,8 +146,8 @@ Codex Agent Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작�
 터미널을 열고 테스트용 폴더에서 저장소를 내려받습니다.
 
 ```bash
-git clone https://github.com/your-org/codex-ai-service-kit.git
-cd codex-ai-service-kit
+git clone https://github.com/your-org/vibe-frame-kit.git
+cd vibe-frame-kit
 ```
 
 실제 수업 저장소 주소가 있다면 `your-org` 부분을 해당 주소로 바꿉니다.
@@ -262,7 +262,7 @@ Codex App을 사용하는 경우에는 `test-ai-service` 폴더를 열고 아래
 ```text
 나는 AI 회의록 요약 서비스를 만들고 싶어.
 이 프로젝트를 요구사항 정의 단계부터 시작해줘.
-Codex Agent Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작성해줘.
+Vibe Frame Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작성해줘.
 ```
 
 확인 기준:
@@ -276,7 +276,7 @@ Codex Agent Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작�
 | 문제 | 점검 방법 |
 | --- | --- |
 | `Permission denied`가 발생함 | `chmod +x scripts/install.sh`를 실행했는지 확인합니다. |
-| `scripts/install.sh`를 찾을 수 없음 | 현재 위치가 `codex-ai-service-kit` 루트인지 확인합니다. |
+| `scripts/install.sh`를 찾을 수 없음 | 현재 위치가 `vibe-frame-kit` 루트인지 확인합니다. |
 | `~/.codex`에 파일이 없음 | 설치 중 오류 메시지를 확인하고 스크립트를 다시 실행합니다. |
 | 기존 `AGENTS.md`가 사라진 것 같음 | `ls ~/.codex/AGENTS.md.backup.*`로 백업 파일을 확인합니다. |
 | Skill 폴더가 일부 없음 | 저장소가 최신인지 확인하고 다시 clone합니다. |

@@ -1,6 +1,6 @@
-# codex-ai-service-kit
+# vibe-frame-kit
 
-`codex-ai-service-kit`은 재직자 AI 서비스 개발 과정 수강생들이 Codex를 활용해 프로젝트를 진행할 수 있도록 돕는 공통 Codex Agent Kit입니다.
+`vibe-frame-kit`은 재직자 AI 서비스 개발 과정 수강생들이 Codex를 활용해 프로젝트를 진행할 수 있도록 돕는 공통 Vibe Frame Kit입니다.
 
 이 저장소는 특정 AI 서비스의 완성 코드를 제공하기보다, 어떤 프로젝트를 만들든 공통으로 적용할 수 있는 개발 흐름, 프롬프트, 템플릿, 설정 기준을 제공하는 것을 목표로 합니다.
 
@@ -62,7 +62,7 @@ AI 서비스 프로젝트는 아이디어만으로 바로 구현을 시작하면
 ## 4. 저장소 구조
 
 ```text
-codex-ai-service-kit/
+vibe-frame-kit/
 ├── README.md
 ├── AGENTS.md
 ├── agents/
@@ -130,15 +130,15 @@ codex-ai-service-kit/
 아래 명령으로 저장소를 복제합니다.
 Windows PowerShell:
 ```bash
-git clone https://github.com/PieterKim/codex-ai-service-kit.git
-cd codex-ai-service-kit
+git clone https://github.com/PieterKim/vibe-frame-kit.git
+cd vibe-frame-kit
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
 macOS/Linux:
 ```bash
-git clone https://github.com/PieterKim/codex-ai-service-kit.git
-cd codex-ai-service-kit
+git clone https://github.com/PieterKim/vibe-frame-kit.git
+cd vibe-frame-kit
 chmod +x scripts/install.sh
 ./scripts/install.sh
 ```
@@ -146,7 +146,7 @@ chmod +x scripts/install.sh
 아직 GitHub에 업로드하기 전이라면, 로컬에서 다음과 같이 새 저장소로 사용할 수 있습니다.
 
 ```bash
-cd codex-ai-service-kit
+cd vibe-frame-kit
 git init
 git add .
 git commit -m "Initial commit"
