@@ -1,0 +1,92 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# API keys and secrets
+*api_key*
+*apikey*
+*API_KEY*
+*APIKEY*
+*secret*
+*secrets*
+*SECRET*
+*SECRETS*
+*.secret
+*.SECRET
+secrets.*
+secret.*
+SECRETS.*
+SECRET.*
+
+# Auth and token files
+token.json
+auth.json
+credentials.json
+TOKEN.json
+AUTH.json
+CREDENTIALS.json
+*token*.json
+*auth*.json
+*credential*.json
+*TOKEN*.json
+*AUTH*.json
+*CREDENTIAL*.json
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local databases
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Logs, cache, and sessions
+logs/
+*.log
+cache/
+.cache/
+sessions/
+session/
+tmp/
+temp/
+
+# Private or sensitive data
+private/
+customer-data/
+customer_data/
+uploads/
+data/raw/
+data/private/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Node / frontend
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
