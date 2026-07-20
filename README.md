@@ -1,4 +1,7 @@
-# vibe-frame-kit
+# vibe-frame-kit_custom
+PeterKim의 vibe-frame-kit을 원본을 보존한 상태에서 변경하여 사용하기 위한 프로젝트입니다.
+원본 레포지토리 : https://github.com/PieterKim/vibe-frame-kit.git
+
 
 `vibe-frame-kit`은 재직자 AI 서비스 개발 과정 수강생들이 Codex를 활용해 프로젝트를 진행할 수 있도록 돕는 공통 Vibe Frame Kit입니다.
 
@@ -211,6 +214,4 @@ DATABASE_URL=your_database_url_here
 
 ## 9. 라이선스 안내
 
-이 저장소의 라이선스는 아직 확정되지 않았습니다.
-
-수업, 개인 학습, 팀 프로젝트에서 자유롭게 사용할 수 있도록 공개할 예정이라면 `MIT License`를 권장합니다. 실제 GitHub 저장소로 공개하기 전에는 `LICENSE` 파일을 추가하고, README의 라이선스 안내도 확정된 내용으로 업데이트해야 합니다.
+라이센스는 https://github.com/PieterKim/vibe-frame-kit.git 의 라이센스 규정을 따릅니다.
