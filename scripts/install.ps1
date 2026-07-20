@@ -1,6 +1,10 @@
-param()
+﻿param()
 
 $ErrorActionPreference = "Stop"
+
+# 한글 깨짐 방지를 위한 인코딩 설정
+$OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 function Write-Info {
     param([string]$Message)

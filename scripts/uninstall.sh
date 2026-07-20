@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+info() {
+  printf '\033[36m[INFO]\033[0m %s\n' "$1"
+}
+
+success() {
+  printf '\033[32m[OK]\033[0m %s\n' "$1"
+}
+
+fail() {
+  printf '\033[31m[ERROR]\033[0m %s\n' "$1"
+}
+
+on_error() {
+  fail "제거 중 문제가 발생했습니다."
+}
+
+trap on_error ERR
+
+CODEX_DIR="$HOME/.codex"
+
+info "vibe-frame-kit 제거를 시작합니다."
+info "대상 위치: $CODEX_DIR"
+
+if [ ! -d "$CODEX_DIR" ]; then
+  success "~/.codex 폴더가 존재하지 않아 제거할 항목이 없습니다."
+  exit 0
+fi
+
+ITEMS_TO_REMOVE=(
+  "AGENTS.md"
+  "agents"
+  "skills"
+  "config"
+  "prompts"
+  "templates"
+  "docs"
+)
+
+for item_name in "${ITEMS_TO_REMOVE[@]}"; do
+  target_path="$CODEX_DIR/$item_name"
+  if [ -e "$target_path" ] || [ -d "$target_path" ]; then
+    rm -rf "$target_path"
+    success "$item_name 항목을 제거했습니다."
+  fi
+done
+
+# ~/.codex 폴더가 비어있으면 폴더 자체도 삭제
+if [ -d "$CODEX_DIR" ] && [ -z "$(ls -A "$CODEX_DIR")" ]; then
+  rmdir "$CODEX_DIR"
+  success "비어 있는 ~/.codex 폴더를 제거했습니다."
+else
+  info "~/.codex 폴더에 백업 또는 다른 파일이 남아있어 폴더를 유지합니다."
+fi
+
+printf '\n'
+success "vibe-frame-kit 제거가 완료되었습니다."
