@@ -180,6 +180,8 @@ if [ -z "$TOOL" ]; then
   echo "============================================="
   echo " vibe-frame-kit 통합 설치를 시작합니다."
   echo "============================================="
+  echo " vibe-frame-kit 통합 설치를 시작합니다."
+  echo "============================================="
   echo "설치할 AI 개발 툴 환경을 선택하세요:"
   echo "1) Gemini (Antigravity)"
   echo "2) Claude (Desktop / Code CLI)"
@@ -204,6 +206,40 @@ if [ -z "$GIT_URL" ]; then
 elif ! is_valid_git_url "$GIT_URL"; then
   fail "유효한 Git 원격 저장소 주소 형식이 아닙니다. 지원 형식: https://..., git@..., ssh://..."
   exit 1
+fi
+
+# 프로젝트 폴더 설정 로직
+SPECIFY_FOLDER=""
+while [[ "$SPECIFY_FOLDER" != "Y" && "$SPECIFY_FOLDER" != "N" ]]; do
+  read -rp "프로젝트 폴더를 지정하여 config.toml을 바로 배포하시겠습니까? (Y/N): " SPECIFY_FOLDER
+  SPECIFY_FOLDER=$(echo "$SPECIFY_FOLDER" | tr '[:lower:]' '[:upper:]')
+done
+
+PROJ_FOLDER=""
+PROJ_NAME=""
+DEPLOY_CONFIG_DIRECTLY=false
+
+if [ "$SPECIFY_FOLDER" = "Y" ]; then
+  while [ -z "$PROJ_FOLDER" ]; do
+    read -rp "프로젝트 폴더 경로를 입력하세요 (예: /workspace/my-project): " PROJ_FOLDER
+  done
+
+  # 절대경로 획득
+  if [[ "$PROJ_FOLDER" != /* ]]; then
+    PROJ_FOLDER="$(pwd)/$PROJ_FOLDER"
+  fi
+
+  if [ ! -d "$PROJ_FOLDER" ]; then
+    mkdir -p "$PROJ_FOLDER"
+    success "프로젝트 폴더를 생성했습니다: $PROJ_FOLDER"
+  fi
+
+  DEFAULT_PROJ_NAME=$(basename "$PROJ_FOLDER")
+  read -rp "프로젝트 이름을 입력하세요 [기본값: $DEFAULT_PROJ_NAME]: " PROJ_NAME
+  if [ -z "$PROJ_NAME" ]; then
+    PROJ_NAME="$DEFAULT_PROJ_NAME"
+  fi
+  DEPLOY_CONFIG_DIRECTLY=true
 fi
 
 # 변수 테이블 바인딩
@@ -243,7 +279,6 @@ info "vibe-frame-kit ($AGENT_NAME 환경) 설치를 시작합니다."
 info "저장소 위치: $REPO_ROOT"
 info "설치 위치: $INSTALL_BASE_DIR"
 info "프로젝트 Git 원격 저장소 주소: $GIT_URL"
-
 mkdir -p "$INSTALL_BASE_DIR"
 
 SOURCE_COMMON_DIR="$REPO_ROOT/common"
@@ -276,6 +311,52 @@ copy_and_replace_directory "$SOURCE_COMMON_DIR" "$INSTALL_BASE_DIR"
 deploy_ignore_files "$REPO_ROOT"
 success "프레임워크 코어 파일 배포 및 템플릿 치환이 완료되었습니다."
 
+# config.toml 파일 직접 배포
+if [ "$DEPLOY_CONFIG_DIRECTLY" = true ]; then
+  SAMPLE_CONFIG_FILE="$SOURCE_COMMON_DIR/config/common.config.sample.toml"
+  TARGET_CONFIG_PATH="$PROJ_FOLDER/config.toml"
+  if [ -f "$SAMPLE_CONFIG_FILE" ]; then
+    cp "$SAMPLE_CONFIG_FILE" "$TARGET_CONFIG_PATH"
+    if command -v python3 &>/dev/null; then
+      python3 -c "
+try:
+    with open('$TARGET_CONFIG_PATH', 'r', encoding='utf-8', errors='ignore') as f:
+        content = f.read()
+    content = content.replace('name = \"my-ai-service-project\"', 'name = \"$PROJ_NAME\"')
+    content = content.replace('{{AGENT_NAME}}', '$AGENT_NAME')
+    content = content.replace('{{INSTALL_PATH}}', '$INSTALL_PATH')
+    content = content.replace('{{CONFIG_FILE}}', 'config.toml')
+    content = content.replace('{{RULES_FILE}}', '$RULES_FILE')
+    content = content.replace('{{GIT_REMOTE_URL}}', '$GIT_URL')
+    with open('$TARGET_CONFIG_PATH', 'w', encoding='utf-8') as f:
+        f.write(content)
+except Exception as e:
+    import sys
+    sys.exit(1)
+"
+    else
+      if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s/name = \"my-ai-service-project\"/name = \"$PROJ_NAME\"/g" "$TARGET_CONFIG_PATH"
+        sed -i '' "s/{{AGENT_NAME}}/$AGENT_NAME/g" "$TARGET_CONFIG_PATH"
+        sed -i '' "s|{{INSTALL_PATH}}|$INSTALL_PATH|g" "$TARGET_CONFIG_PATH"
+        sed -i '' "s/{{CONFIG_FILE}}/config.toml/g" "$TARGET_CONFIG_PATH"
+        sed -i '' "s/{{RULES_FILE}}/$RULES_FILE/g" "$TARGET_CONFIG_PATH"
+        sed -i '' "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$TARGET_CONFIG_PATH"
+      else
+        sed -i "s/name = \"my-ai-service-project\"/name = \"$PROJ_NAME\"/g" "$TARGET_CONFIG_PATH"
+        sed -i "s/{{AGENT_NAME}}/$AGENT_NAME/g" "$TARGET_CONFIG_PATH"
+        sed -i "s|{{INSTALL_PATH}}|$INSTALL_PATH|g" "$TARGET_CONFIG_PATH"
+        sed -i "s/{{CONFIG_FILE}}/config.toml/g" "$TARGET_CONFIG_PATH"
+        sed -i "s/{{RULES_FILE}}/$RULES_FILE/g" "$TARGET_CONFIG_PATH"
+        sed -i "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$TARGET_CONFIG_PATH"
+      fi
+    fi
+    success "프로젝트 폴더 내에 config.toml을 자동 생성했습니다: $TARGET_CONFIG_PATH"
+  else
+    fail "샘플 설정 파일이 존재하지 않아 config.toml을 자동 생성하지 못했습니다."
+  fi
+fi
+
 printf '\n'
 success "vibe-frame-kit ($AGENT_NAME 버전) 설치가 완료되었습니다."
 printf '\033[32m설치된 항목:\033[0m\n'
@@ -292,13 +373,20 @@ printf '\n'
 printf '\033[33m=============================================\033[0m\n'
 printf '\033[33m [Action Required: Setup Configuration]\033[0m\n'
 printf '\033[33m=============================================\033[0m\n'
-printf ' 1. Sample TOML file location:\n'
-printf '    %s/config/%s\n' "$INSTALL_PATH" "$CONFIG_FILE"
-printf ' 2. How to activate:\n'
-printf '    - Copy the sample file above to your '\''Project Root Folder'\''\n'
-printf '    - Rename the file to '\''config.toml'\'' to apply settings to the Agent.\n'
-printf '      (e.g., %s -> config.toml)\n' "$CONFIG_FILE"
-printf ' 3. Git remote URL injected into sample config:\n'
+if [ "$DEPLOY_CONFIG_DIRECTLY" = true ]; then
+  printf ' 1. Configuration file successfully created:\n'
+  printf '    %s/config.toml\n' "$PROJ_FOLDER"
+  printf ' 2. Status:\n'
+  printf '    No further action needed! The Agent will now read settings from this file.\n'
+else
+  printf ' 1. Sample TOML file location:\n'
+  printf '    %s/config/%s\n' "$INSTALL_PATH" "$CONFIG_FILE"
+  printf ' 2. How to activate:\n'
+  printf '    - Copy the sample file above to your '\''Project Root Folder'\''\n'
+  printf '    - Rename the file to '\''config.toml'\'' to apply settings to the Agent.\n'
+  printf '      (e.g., %s -> config.toml)\n' "$CONFIG_FILE"
+fi
+printf ' 3. Git remote URL injected:\n'
 printf '    %s\n' "$GIT_URL"
 printf '\033[33m=============================================\033[0m\n'
 printf '\n'

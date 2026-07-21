@@ -254,6 +254,37 @@ try {
 
     $Mappings["{{GIT_REMOTE_URL}}"] = $GitUrl
 
+    # Project folder setup logic
+    $SpecifyFolder = ""
+    while ($SpecifyFolder -ne "Y" -and $SpecifyFolder -ne "N") {
+        $SpecifyFolder = (Read-Host "Do you want to specify a project folder to automatically deploy config.toml? (Y/N)").ToUpper()
+    }
+
+    $ProjFolder = ""
+    $ProjName = ""
+    $DeployConfigDirectly = $false
+
+    if ($SpecifyFolder -eq "Y") {
+        while ([string]::IsNullOrWhiteSpace($ProjFolder)) {
+            $ProjFolder = Read-Host "Enter the project folder path (e.g. C:\workspace\my-project)"
+        }
+        
+        # Resolve path to absolute
+        $ProjFolder = [System.IO.Path]::GetFullPath($ProjFolder)
+
+        if (-not (Test-Path $ProjFolder)) {
+            New-Item -ItemType Directory -Path $ProjFolder -Force | Out-Null
+            Write-Success "Created project folder: $ProjFolder"
+        }
+
+        $DefaultProjName = Split-Path $ProjFolder -Leaf
+        $ProjName = Read-Host "Enter the project name [Default: $DefaultProjName]"
+        if ([string]::IsNullOrWhiteSpace($ProjName)) {
+            $ProjName = $DefaultProjName
+        }
+        $DeployConfigDirectly = $true
+    }
+
     Write-Info "Installing vibe-frame-kit for $($Mappings['{{AGENT_NAME}}'])."
     Write-Info "Repository location: $RepoRoot"
     Write-Info "Target path: $InstallBaseDir"
@@ -293,6 +324,28 @@ try {
     Deploy-IgnoreFiles -RepoRoot $RepoRoot
     Write-Success "Framework files deployed and template variables substituted."
 
+    # Generate config.toml in project folder if requested
+    if ($DeployConfigDirectly) {
+        $SampleConfigFile = Join-Path $SourceCommonDir "config\common.config.sample.toml"
+        $TargetConfigPath = Join-Path $ProjFolder "config.toml"
+        if (Test-Path $SampleConfigFile) {
+            $ConfigContent = Get-Content -Path $SampleConfigFile -Raw -Encoding UTF8
+            
+            # Substitutions
+            $ConfigContent = $ConfigContent.Replace('name = "my-ai-service-project"', "name = `"$ProjName`"")
+            $ConfigContent = $ConfigContent.Replace("{{AGENT_NAME}}", $Mappings["{{AGENT_NAME}}"])
+            $ConfigContent = $ConfigContent.Replace("{{INSTALL_PATH}}", $Mappings["{{INSTALL_PATH}}"])
+            $ConfigContent = $ConfigContent.Replace("{{CONFIG_FILE}}", "config.toml")
+            $ConfigContent = $ConfigContent.Replace("{{RULES_FILE}}", $Mappings["{{RULES_FILE}}"])
+            $ConfigContent = $ConfigContent.Replace("{{GIT_REMOTE_URL}}", $GitUrl)
+
+            Set-Content -Path $TargetConfigPath -Value $ConfigContent -Encoding UTF8
+            Write-Success "Automatically created config.toml in project folder: $TargetConfigPath"
+        } else {
+            Write-Fail "Sample config file not found, failed to auto-create config.toml."
+        }
+    }
+
     Write-Host ""
     Write-Success "vibe-frame-kit ($($Mappings['{{AGENT_NAME}}']) version) installation complete."
     Write-Host "Installed items:" -ForegroundColor Green
@@ -309,13 +362,20 @@ try {
     Write-Host "=============================================" -ForegroundColor Yellow
     Write-Host " [Action Required: Setup Configuration]" -ForegroundColor Yellow
     Write-Host "=============================================" -ForegroundColor Yellow
-    Write-Host " 1. Sample TOML file location:" -ForegroundColor Cyan
-    Write-Host "    $($Mappings['{{INSTALL_PATH}}'])/config/$($Mappings['{{CONFIG_FILE}}'])" -ForegroundColor White
-    Write-Host " 2. How to activate:" -ForegroundColor Cyan
-    Write-Host "    - Copy the sample file above to your 'Project Root Folder'." -ForegroundColor White
-    Write-Host "    - Rename the file to 'config.toml' to apply settings to the Agent." -ForegroundColor White
-    Write-Host "      (e.g., $($Mappings['{{CONFIG_FILE}}']) -> config.toml)" -ForegroundColor Gray
-    Write-Host " 3. Git remote URL injected into sample config:" -ForegroundColor Cyan
+    if ($DeployConfigDirectly) {
+        Write-Host " 1. Configuration file successfully created:" -ForegroundColor Cyan
+        Write-Host "    $ProjFolder\config.toml" -ForegroundColor White
+        Write-Host " 2. Status:" -ForegroundColor Cyan
+        Write-Host "    No further action needed! The Agent will now read settings from this file." -ForegroundColor White
+    } else {
+        Write-Host " 1. Sample TOML file location:" -ForegroundColor Cyan
+        Write-Host "    $($Mappings['{{INSTALL_PATH}}'])/config/$($Mappings['{{CONFIG_FILE}}'])" -ForegroundColor White
+        Write-Host " 2. How to activate:" -ForegroundColor Cyan
+        Write-Host "    - Copy the sample file above to your 'Project Root Folder'." -ForegroundColor White
+        Write-Host "    - Rename the file to 'config.toml' to apply settings to the Agent." -ForegroundColor White
+        Write-Host "      (e.g., $($Mappings['{{CONFIG_FILE}}']) -> config.toml)" -ForegroundColor Gray
+    }
+    Write-Host " 3. Git remote URL injected:" -ForegroundColor Cyan
     Write-Host "    $GitUrl" -ForegroundColor White
     Write-Host "=============================================" -ForegroundColor Yellow
 }
