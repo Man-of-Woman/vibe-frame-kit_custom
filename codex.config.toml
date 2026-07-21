@@ -1,13 +1,13 @@
-# {{CONFIG_FILE}}
+﻿# codex.config.sample.toml
 #
 # vibe-frame-kit 사용자를 위한 샘플 설정 파일입니다.
 # 실제 프로젝트에 맞게 복사해서 수정하되, API Key, token, password 같은
 # 민감정보는 이 파일에 작성하지 마세요.
 
 [project]
-name = "my-ai-service-project"
+name = "vibe-frame-kit_custom"
 language = "ko"
-description = "{{AGENT_NAME}}를 활용한 AI 서비스 개발 프로젝트"
+description = "Vibe frame kit 수정 프로젝트"
 
 [workflow]
 # 기본 개발 흐름:
@@ -94,9 +94,10 @@ enable_metadata_logging = true
 
 [git]
 # 작업 대상 원격 저장소 주소입니다. 설치 시 입력한 값을 기준으로 채워지며, git push 유도/검증의 기준으로 사용합니다.
-remote_repository_url = "{{GIT_REMOTE_URL}}"
+remote_repository_url = "https://github.com/Man-of-Woman/vibe-frame-kit_custom.git"
 # 작업 완료 및 승인 후 자동으로 git add, commit, push 명령어를 가이드하거나 수행하도록 유도합니다. (true/false)
 auto_commit_push = true
 # Git 커밋 메시지를 한글 기반으로 작성할지 여부입니다. (true/false)
 korean_commit_message = true
+
 

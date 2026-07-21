@@ -3,7 +3,7 @@
 # vibe-frame-kit 통합 Bash 설치 스크립트
 #
 # Usage:
-#   ./install.sh -t <gemini|claude|codex>
+#   ./install.sh -t <gemini|claude|codex> -g <git_remote_url>
 #   ./install.sh (대화식 선택)
 
 set -euo pipefail
@@ -18,6 +18,11 @@ success() {
 
 fail() {
   printf '\033[31m[ERROR]\033[0m %s\n' "$1"
+}
+
+is_valid_git_url() {
+  local value="$1"
+  [[ -n "$value" && "$value" =~ ^(https://|git@|ssh://).+ ]]
 }
 
 on_error() {
@@ -47,7 +52,8 @@ try:
         ('{{AGENT_NAME}}', '$AGENT_NAME'),
         ('{{INSTALL_PATH}}', '$INSTALL_PATH'),
         ('{{CONFIG_FILE}}', '$CONFIG_FILE'),
-        ('{{RULES_FILE}}', '$RULES_FILE')
+        ('{{RULES_FILE}}', '$RULES_FILE'),
+        ('{{GIT_REMOTE_URL}}', '$GIT_URL')
     ]:
         content = content.replace(k, v)
     with open('$dest_file', 'w', encoding='utf-8') as f:
@@ -62,11 +68,13 @@ except Exception as e:
       sed -i '' "s|{{INSTALL_PATH}}|$INSTALL_PATH|g" "$dest_file"
       sed -i '' "s/{{CONFIG_FILE}}/$CONFIG_FILE/g" "$dest_file"
       sed -i '' "s/{{RULES_FILE}}/$RULES_FILE/g" "$dest_file"
+      sed -i '' "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$dest_file"
     else
       sed -i "s/{{AGENT_NAME}}/$AGENT_NAME/g" "$dest_file"
       sed -i "s|{{INSTALL_PATH}}|$INSTALL_PATH|g" "$dest_file"
       sed -i "s/{{CONFIG_FILE}}/$CONFIG_FILE/g" "$dest_file"
       sed -i "s/{{RULES_FILE}}/$RULES_FILE/g" "$dest_file"
+      sed -i "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$dest_file"
     fi
   fi
 }
@@ -156,11 +164,13 @@ node_modules/
 }
 
 TOOL=""
+GIT_URL=""
 
-# 파라미터 처리 (-t <tool>)
-while getopts "t:" opt; do
+# 파라미터 처리 (-t <tool>, -g <git_remote_url>)
+while getopts "t:g:" opt; do
   case $opt in
     t) TOOL="$OPTARG" ;;
+    g) GIT_URL="$OPTARG" ;;
     *) fail "잘못된 옵션입니다." ; exit 1 ;;
   esac
 done
@@ -181,6 +191,19 @@ if [ -z "$TOOL" ]; then
     3) TOOL="codex" ;;
     *) fail "잘못된 선택입니다. 설치를 중단합니다." ; exit 1 ;;
   esac
+fi
+
+if [ -z "$GIT_URL" ]; then
+  while true; do
+    read -rp "프로젝트 Git 원격 저장소 주소를 입력하세요 (필수, 예: https://github.com/your-org/your-repo.git): " GIT_URL
+    if is_valid_git_url "$GIT_URL"; then
+      break
+    fi
+    fail "유효한 Git 원격 저장소 주소가 필요합니다. 지원 형식: https://..., git@..., ssh://..."
+  done
+elif ! is_valid_git_url "$GIT_URL"; then
+  fail "유효한 Git 원격 저장소 주소 형식이 아닙니다. 지원 형식: https://..., git@..., ssh://..."
+  exit 1
 fi
 
 # 변수 테이블 바인딩
@@ -219,6 +242,7 @@ TIMESTAMP="$(date +"%Y%m%d-%H%M%S")"
 info "vibe-frame-kit ($AGENT_NAME 환경) 설치를 시작합니다."
 info "저장소 위치: $REPO_ROOT"
 info "설치 위치: $INSTALL_BASE_DIR"
+info "프로젝트 Git 원격 저장소 주소: $GIT_URL"
 
 mkdir -p "$INSTALL_BASE_DIR"
 
@@ -274,5 +298,7 @@ printf ' 2. How to activate:\n'
 printf '    - Copy the sample file above to your '\''Project Root Folder'\''\n'
 printf '    - Rename the file to '\''config.toml'\'' to apply settings to the Agent.\n'
 printf '      (e.g., %s -> config.toml)\n' "$CONFIG_FILE"
+printf ' 3. Git remote URL injected into sample config:\n'
+printf '    %s\n' "$GIT_URL"
 printf '\033[33m=============================================\033[0m\n'
 printf '\n'

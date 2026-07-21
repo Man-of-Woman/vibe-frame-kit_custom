@@ -2,6 +2,9 @@ param(
     [Parameter(Mandatory=$false)]
     [ValidateSet("gemini", "claude", "codex")]
     [string]$Tool,
+
+    [Parameter(Mandatory=$false)]
+    [string]$GitUrl,
     
     [Parameter(Mandatory=$false)]
     [switch]$Interactive
@@ -24,6 +27,12 @@ function Write-Success {
 function Write-Fail {
     param([string]$Message)
     Write-Host "[ERROR] $Message" -ForegroundColor Red
+}
+
+function Test-GitUrlFormat {
+    param([string]$Value)
+    if ([string]::IsNullOrWhiteSpace($Value)) { return $false }
+    return $Value -match '^(https://|git@|ssh://).+'
 }
 
 function Safe-BackupDirectory {
@@ -230,9 +239,25 @@ try {
         }
     }
 
+    if ([string]::IsNullOrWhiteSpace($GitUrl)) {
+        do {
+            $GitUrl = Read-Host "Enter your project Git remote URL (required, e.g. https://github.com/your-org/your-repo.git)"
+            if (-not (Test-GitUrlFormat $GitUrl)) {
+                Write-Fail "A valid Git remote URL is required. Supported formats: https://..., git@..., ssh://..."
+                $GitUrl = ""
+            }
+        } while ([string]::IsNullOrWhiteSpace($GitUrl))
+    }
+    elseif (-not (Test-GitUrlFormat $GitUrl)) {
+        throw "Invalid Git remote URL format. Supported formats: https://..., git@..., ssh://..."
+    }
+
+    $Mappings["{{GIT_REMOTE_URL}}"] = $GitUrl
+
     Write-Info "Installing vibe-frame-kit for $($Mappings['{{AGENT_NAME}}'])."
     Write-Info "Repository location: $RepoRoot"
     Write-Info "Target path: $InstallBaseDir"
+    Write-Info "Project Git remote URL: $GitUrl"
 
     if (-not (Test-Path $InstallBaseDir)) {
         New-Item -ItemType Directory -Path $InstallBaseDir -Force | Out-Null
@@ -290,6 +315,8 @@ try {
     Write-Host "    - Copy the sample file above to your 'Project Root Folder'." -ForegroundColor White
     Write-Host "    - Rename the file to 'config.toml' to apply settings to the Agent." -ForegroundColor White
     Write-Host "      (e.g., $($Mappings['{{CONFIG_FILE}}']) -> config.toml)" -ForegroundColor Gray
+    Write-Host " 3. Git remote URL injected into sample config:" -ForegroundColor Cyan
+    Write-Host "    $GitUrl" -ForegroundColor White
     Write-Host "=============================================" -ForegroundColor Yellow
 }
 catch {

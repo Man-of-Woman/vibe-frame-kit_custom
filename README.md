@@ -38,7 +38,7 @@
 
 ## 3. 설치 및 제거 방법
 
-루트 디렉토리에 통합된 스마트 인스톨러(`install.ps1`, `install.sh`)를 사용하여 간단하게 설치할 수 있습니다. 스크립트 실행 시 대화식으로 설치할 툴을 선택하거나, `-t` 또는 `-Tool` 인자값으로 명시하여 설치할 수 있습니다.
+루트 디렉토리에 통합된 스마트 인스톨러(`install.ps1`, `install.sh`)를 사용하여 간단하게 설치할 수 있습니다. 스크립트 실행 시 대화식으로 설치할 툴을 선택하거나, `-t` 또는 `-Tool` 인자값으로 명시하여 설치할 수 있습니다. 이때 프로젝트의 Git 원격 저장소 주소는 필수 입력이며, 설치된 샘플 설정 파일의 `[git].remote_repository_url`에 자동 반영됩니다.
 
 ### 1) Windows 환경 (PowerShell)
 * **설치 명령**:
@@ -47,9 +47,9 @@
   powershell -ExecutionPolicy Bypass -File .\install\install.ps1
 
   # 또는 특정 툴 명시 설치
-  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool gemini
-  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool claude
-  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool codex
+  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool gemini -GitUrl https://github.com/your-org/your-repo.git
+  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool claude -GitUrl https://github.com/your-org/your-repo.git
+  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool codex -GitUrl https://github.com/your-org/your-repo.git
   ```
 * **제거 명령**:
   ```powershell
@@ -70,9 +70,9 @@
   ./install/install.sh
 
   # 또는 특정 툴 명시 설치
-  ./install/install.sh -t gemini
-  ./install/install.sh -t claude
-  ./install/install.sh -t codex
+  ./install/install.sh -t gemini -g https://github.com/your-org/your-repo.git
+  ./install/install.sh -t claude -g https://github.com/your-org/your-repo.git
+  ./install/install.sh -t codex -g https://github.com/your-org/your-repo.git
   ```
 * **제거 명령**:
   ```bash

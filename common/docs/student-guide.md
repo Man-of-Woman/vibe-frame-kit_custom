@@ -58,6 +58,8 @@ Windows PowerShell에서 아래 명령을 실행합니다.
 powershell -ExecutionPolicy Bypass -File .\install\install.ps1
 ```
 
+설치 스크립트는 프로젝트의 Git 원격 저장소 주소를 필수로 입력받습니다. 입력한 주소는 이후 `config.toml`의 `[git].remote_repository_url` 기본값으로 반영됩니다.
+
 이 명령은 현재 Kit의 다음 항목을 사용자 폴더의 `{{INSTALL_PATH}}`로 복사합니다.
 
 | 복사 대상 | 설치 위치 |
@@ -287,6 +289,7 @@ enable_generation = true
 enable_metadata_logging = true
 
 [git]
+remote_repository_url = "https://github.com/your-org/your-repo.git"
 # 작업 완료 및 승인 후 자동으로 git add, commit, push 명령어를 가이드하거나 proposal할지 여부
 auto_commit_push = true
 # Git 커밋 메시지를 한글 기반으로 가이드할지 여부
