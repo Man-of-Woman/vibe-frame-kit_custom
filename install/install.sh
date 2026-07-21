@@ -196,13 +196,16 @@ if [ -z "$TOOL" ]; then
 fi
 
 if [ -z "$GIT_URL" ]; then
-  while true; do
-    read -rp "프로젝트 Git 원격 저장소 주소를 입력하세요 (필수, 예: https://github.com/your-org/your-repo.git): " GIT_URL
-    if is_valid_git_url "$GIT_URL"; then
-      break
-    fi
-    fail "유효한 Git 원격 저장소 주소가 필요합니다. 지원 형식: https://..., git@..., ssh://..."
-  done
+  read -rp "프로젝트 Git 원격 저장소 주소를 입력하세요 (선택사항, 건너뛰려면 Enter): " GIT_URL
+  if [ -n "$GIT_URL" ] && ! is_valid_git_url "$GIT_URL"; then
+    while true; do
+      fail "유효하지 않은 Git 주소 형식입니다. 올바른 주소를 입력하거나 건너뛰려면 Enter를 누르세요."
+      read -rp "프로젝트 Git 원격 저장소 주소를 입력하세요 (Optional): " GIT_URL
+      if [ -z "$GIT_URL" ] || is_valid_git_url "$GIT_URL"; then
+        break
+      fi
+    done
+  fi
 elif ! is_valid_git_url "$GIT_URL"; then
   fail "유효한 Git 원격 저장소 주소 형식이 아닙니다. 지원 형식: https://..., git@..., ssh://..."
   exit 1
@@ -328,6 +331,8 @@ try:
     content = content.replace('{{CONFIG_FILE}}', 'config.toml')
     content = content.replace('{{RULES_FILE}}', '$RULES_FILE')
     content = content.replace('{{GIT_REMOTE_URL}}', '$GIT_URL')
+    if not '$GIT_URL':
+        content = content.replace('auto_commit_push = true', 'auto_commit_push = false')
     with open('$TARGET_CONFIG_PATH', 'w', encoding='utf-8') as f:
         f.write(content)
 except Exception as e:
@@ -342,6 +347,9 @@ except Exception as e:
         sed -i '' "s/{{CONFIG_FILE}}/config.toml/g" "$TARGET_CONFIG_PATH"
         sed -i '' "s/{{RULES_FILE}}/$RULES_FILE/g" "$TARGET_CONFIG_PATH"
         sed -i '' "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$TARGET_CONFIG_PATH"
+        if [ -z "$GIT_URL" ]; then
+          sed -i '' "s/auto_commit_push = true/auto_commit_push = false/g" "$TARGET_CONFIG_PATH"
+        fi
       else
         sed -i "s/name = \"my-ai-service-project\"/name = \"$PROJ_NAME\"/g" "$TARGET_CONFIG_PATH"
         sed -i "s/{{AGENT_NAME}}/$AGENT_NAME/g" "$TARGET_CONFIG_PATH"
@@ -349,6 +357,9 @@ except Exception as e:
         sed -i "s/{{CONFIG_FILE}}/config.toml/g" "$TARGET_CONFIG_PATH"
         sed -i "s/{{RULES_FILE}}/$RULES_FILE/g" "$TARGET_CONFIG_PATH"
         sed -i "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$TARGET_CONFIG_PATH"
+        if [ -z "$GIT_URL" ]; then
+          sed -i "s/auto_commit_push = true/auto_commit_push = false/g" "$TARGET_CONFIG_PATH"
+        fi
       fi
     fi
     success "프로젝트 폴더 내에 config.toml을 자동 생성했습니다: $TARGET_CONFIG_PATH"

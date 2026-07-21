@@ -240,15 +240,15 @@ try {
     }
 
     if ([string]::IsNullOrWhiteSpace($GitUrl)) {
-        do {
-            $GitUrl = Read-Host "Enter your project Git remote URL (required, e.g. https://github.com/your-org/your-repo.git)"
-            if (-not (Test-GitUrlFormat $GitUrl)) {
-                Write-Fail "A valid Git remote URL is required. Supported formats: https://..., git@..., ssh://..."
-                $GitUrl = ""
-            }
-        } while ([string]::IsNullOrWhiteSpace($GitUrl))
+        $GitUrl = Read-Host "Enter your project Git remote URL (Optional, press Enter to skip)"
+        if (-not [string]::IsNullOrWhiteSpace($GitUrl) -and -not (Test-GitUrlFormat $GitUrl)) {
+            do {
+                Write-Fail "Invalid Git URL format. Enter a valid URL or press Enter to skip."
+                $GitUrl = Read-Host "Enter your project Git remote URL (Optional)"
+            } while (-not [string]::IsNullOrWhiteSpace($GitUrl) -and -not (Test-GitUrlFormat $GitUrl))
+        }
     }
-    elseif (-not (Test-GitUrlFormat $GitUrl)) {
+    elseif (-not [string]::IsNullOrWhiteSpace($GitUrl) -and -not (Test-GitUrlFormat $GitUrl)) {
         throw "Invalid Git remote URL format. Supported formats: https://..., git@..., ssh://..."
     }
 
@@ -338,6 +338,9 @@ try {
             $ConfigContent = $ConfigContent.Replace("{{CONFIG_FILE}}", "config.toml")
             $ConfigContent = $ConfigContent.Replace("{{RULES_FILE}}", $Mappings["{{RULES_FILE}}"])
             $ConfigContent = $ConfigContent.Replace("{{GIT_REMOTE_URL}}", $GitUrl)
+            if ([string]::IsNullOrWhiteSpace($GitUrl)) {
+                $ConfigContent = $ConfigContent.Replace("auto_commit_push = true", "auto_commit_push = false")
+            }
 
             Set-Content -Path $TargetConfigPath -Value $ConfigContent -Encoding UTF8
             Write-Success "Automatically created config.toml in project folder: $TargetConfigPath"
