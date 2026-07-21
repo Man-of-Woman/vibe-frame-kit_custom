@@ -1,10 +1,6 @@
-param()
+﻿param()
 
 $ErrorActionPreference = "Stop"
-
-# 한글 깨짐 방지를 위한 인코딩 설정
-$OutputEncoding = [System.Text.Encoding]::UTF8
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 function Write-Info {
     param([string]$Message)
@@ -87,36 +83,46 @@ function Safe-BackupDirectory {
 try {
     $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
     $RepoRoot = Resolve-Path (Join-Path $ScriptDir "..")
-    $CodexDir = Join-Path $HOME ".codex"
+    $ClaudeDir = Join-Path $HOME ".claude"
     $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 
-    Write-Info "vibe-frame-kit 설치를 시작합니다."
+    Write-Info "vibe-frame-kit (Claude 버전) 설치를 시작합니다."
     Write-Info "저장소 위치: $RepoRoot"
-    Write-Info "설치 위치: $CodexDir"
+    Write-Info "설치 위치: $ClaudeDir"
 
-    if (-not (Test-Path $CodexDir)) {
-        New-Item -ItemType Directory -Path $CodexDir | Out-Null
-        Write-Success "~/.codex 폴더를 생성했습니다."
+    if (-not (Test-Path $ClaudeDir)) {
+        New-Item -ItemType Directory -Path $ClaudeDir -Force | Out-Null
+        Write-Success "~/.claude 폴더를 생성했습니다."
     }
     else {
-        Write-Success "~/.codex 폴더를 확인했습니다."
+        Write-Success "~/.claude 폴더를 확인했습니다."
     }
 
-    $SourceAgentsFile = Join-Path $RepoRoot "AGENTS.md"
-    $TargetAgentsFile = Join-Path $CodexDir "AGENTS.md"
+    $SourceAgentsFile = Join-Path $RepoRoot "CLAUDE.md"
+    $TargetAgentsFile = Join-Path $ClaudeDir "CLAUDE.md"
 
     if (-not (Test-Path $SourceAgentsFile)) {
-        throw "원본 AGENTS.md 파일을 찾을 수 없습니다: $SourceAgentsFile"
+        throw "원본 CLAUDE.md 파일을 찾을 수 없습니다: $SourceAgentsFile"
     }
 
     if (Test-Path $TargetAgentsFile) {
-        $BackupPath = Join-Path $CodexDir "AGENTS.md.backup.$Timestamp"
-        Copy-Item -Path $TargetAgentsFile -Destination $BackupPath -Force
-        Write-Success "기존 ~/.codex/AGENTS.md 파일을 백업했습니다: $BackupPath"
+        $BackupPath = Join-Path $ClaudeDir "CLAUDE.md.backup.$Timestamp"
+        try {
+            Copy-Item -Path $TargetAgentsFile -Destination $BackupPath -Force -ErrorAction Stop
+            Write-Success "기존 ~/.claude/CLAUDE.md 파일을 백업했습니다: $BackupPath"
+        }
+        catch {
+            Write-Host "[WARNING] CLAUDE.md 파일 백업 실패. 계속 진행합니다." -ForegroundColor Yellow
+        }
     }
 
-    Copy-Item -Path $SourceAgentsFile -Destination $TargetAgentsFile -Force
-    Write-Success "AGENTS.md 파일을 설치했습니다."
+    try {
+        Copy-Item -Path $SourceAgentsFile -Destination $TargetAgentsFile -Force -ErrorAction Stop
+        Write-Success "CLAUDE.md 파일을 설치했습니다."
+    }
+    catch {
+        Write-Host "[WARNING] CLAUDE.md 파일 설치 실패 (사용 중이거나 권한 부족). 건너뜁니다." -ForegroundColor Yellow
+    }
 
     $DirectoriesToCopy = @(
         "agents",
@@ -129,16 +135,16 @@ try {
 
     foreach ($DirectoryName in $DirectoriesToCopy) {
         $SourceDir = Join-Path $RepoRoot $DirectoryName
-        $TargetDir = Join-Path $CodexDir $DirectoryName
+        $TargetDir = Join-Path $ClaudeDir $DirectoryName
 
         if (-not (Test-Path $SourceDir)) {
             throw "원본 폴더를 찾을 수 없습니다: $SourceDir"
         }
 
         if (Test-Path $TargetDir) {
-            $BackupDir = Join-Path $CodexDir "$DirectoryName.backup.$Timestamp"
+            $BackupDir = Join-Path $ClaudeDir "$DirectoryName.backup.$Timestamp"
             Safe-BackupDirectory -SourceDir $TargetDir -BackupDir $BackupDir
-            Write-Success "기존 ~/.codex/$DirectoryName 폴더를 백업했습니다: $BackupDir"
+            Write-Success "기존 ~/.claude/$DirectoryName 폴더를 백업했습니다."
         }
 
         Safe-CopyDirectory -SourceDir $SourceDir -TargetDir $TargetDir
@@ -146,15 +152,15 @@ try {
     }
 
     Write-Host ""
-    Write-Success "vibe-frame-kit 설치가 완료되었습니다."
+    Write-Success "vibe-frame-kit (Claude 버전) 설치가 완료되었습니다."
     Write-Host "설치된 항목:" -ForegroundColor Green
-    Write-Host "- ~/.codex/AGENTS.md"
-    Write-Host "- ~/.codex/agents/"
-    Write-Host "- ~/.codex/skills/"
-    Write-Host "- ~/.codex/config/"
-    Write-Host "- ~/.codex/prompts/"
-    Write-Host "- ~/.codex/templates/"
-    Write-Host "- ~/.codex/docs/"
+    Write-Host "- ~/.claude/CLAUDE.md"
+    Write-Host "- ~/.claude/agents/"
+    Write-Host "- ~/.claude/skills/"
+    Write-Host "- ~/.claude/config/"
+    Write-Host "- ~/.claude/prompts/"
+    Write-Host "- ~/.claude/templates/"
+    Write-Host "- ~/.claude/docs/"
 }
 catch {
     Write-Host ""
@@ -165,7 +171,7 @@ catch {
     Write-Host "- 이 스크립트를 vibe-frame-kit 저장소 안에서 실행했는지 확인하세요."
     Write-Host "- PowerShell 실행 권한 문제라면 다음 명령을 참고하세요:"
     Write-Host "  powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1"
-    Write-Host "- ~/.codex 폴더에 파일을 쓸 권한이 있는지 확인하세요."
+    Write-Host "- ~/.claude 폴더에 파일을 쓸 권한이 있는지 확인하세요."
     exit 1
 }
 

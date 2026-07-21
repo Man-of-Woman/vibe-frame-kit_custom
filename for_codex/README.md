@@ -131,18 +131,21 @@ vibe-frame-kit/
 
 ## 5. 설치 방법
 
-아래 명령으로 저장소를 복제합니다.
+이 프레임워크 배포판은 **Codex** 전용이며, 사용자 홈 디렉토리의 `~/.codex`에 설치되어 전역 규칙으로 연동됩니다.
+
+아래 명령으로 저장소를 복제하고 해당 툴의 하위 폴더로 이동하여 스크립트를 실행합니다.
+
 Windows PowerShell:
 ```bash
 git clone https://github.com/PieterKim/vibe-frame-kit.git
-cd vibe-frame-kit
+cd vibe-frame-kit/for_codex
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
 macOS/Linux:
 ```bash
 git clone https://github.com/PieterKim/vibe-frame-kit.git
-cd vibe-frame-kit
+cd vibe-frame-kit/for_codex
 chmod +x scripts/install.sh
 ./scripts/install.sh
 ```

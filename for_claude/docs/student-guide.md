@@ -1,8 +1,8 @@
-# 수강생 가이드
+﻿# 수강생 가이드
 
 이 문서는 재직자 AI 서비스 개발 과정 수강생이 `vibe-frame-kit`을 설치하고 사용하는 방법을 설명합니다.
 
-Antigravity가 코드를 대신 전부 만들어주는 도구라고 생각하기보다, 프로젝트를 단계별로 함께 정리하고 구현을 도와주는 개발 보조자라고 생각하면 좋습니다.
+Claude가 코드를 대신 전부 만들어주는 도구라고 생각하기보다, 프로젝트를 단계별로 함께 정리하고 구현을 도와주는 개발 보조자라고 생각하면 좋습니다.
 
 ## 1. Vibe Frame Kit 소개
 
@@ -12,7 +12,7 @@ Vibe Frame Kit는 AI 서비스 프로젝트를 진행할 때 공통 개발 흐�
 
 | 항목 | 설명 |
 | --- | --- |
-| `AGENTS.md` | Antigravity가 따라야 할 공통 행동 규칙 |
+| `CLAUDE.md` | Claude가 따라야 할 공통 행동 규칙 |
 | `agents/` | 작업 단계별 라우팅 기준 |
 | `skills/` | 요구사항 정의, MVP 설계, 오류 분석 등 작업별 지침 |
 | `prompts/` | 수강생이 복사해서 사용할 수 있는 프롬프트 |
@@ -26,7 +26,7 @@ Vibe Frame Kit는 AI 서비스 프로젝트를 진행할 때 공통 개발 흐�
 
 | 준비사항 | 설명 |
 | --- | --- |
-| Antigravity 사용 환경 | Antigravity CLI 또는 Antigravity 앱을 사용할 수 있어야 합니다. |
+| Claude 사용 환경 | Claude CLI 또는 Claude 앱을 사용할 수 있어야 합니다. |
 | Git | GitHub에서 저장소를 내려받을 때 사용합니다. |
 | PowerShell | Windows에서 설치 스크립트를 실행할 때 사용합니다. |
 | 프로젝트 폴더 | AI 서비스 프로젝트를 만들 작업 폴더를 준비합니다. |
@@ -58,32 +58,32 @@ Windows PowerShell에서 아래 명령을 실행합니다.
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
-이 명령은 현재 Kit의 다음 항목을 사용자 폴더의 `~/.gemini/config`로 복사합니다.
+이 명령은 현재 Kit의 다음 항목을 사용자 폴더의 `~/.claude`로 복사합니다.
 
 | 복사 대상 | 설치 위치 |
 | --- | --- |
-| `AGENTS.md` | `~/.gemini/config/AGENTS.md` |
-| `agents/` | `~/.gemini/config/agents/` |
-| `skills/` | `~/.gemini/config/skills/` |
-| `config/` | `~/.gemini/config/config/` |
-| `prompts/` | `~/.gemini/config/prompts/` |
-| `templates/` | `~/.gemini/config/templates/` |
-| `docs/` | `~/.gemini/config/docs/` |
+| `CLAUDE.md` | `~/.claude/CLAUDE.md` |
+| `agents/` | `~/.claude/agents/` |
+| `skills/` | `~/.claude/skills/` |
+| `config/` | `~/.claude/config/` |
+| `prompts/` | `~/.claude/prompts/` |
+| `templates/` | `~/.claude/templates/` |
+| `docs/` | `~/.claude/docs/` |
 
-기존 `~/.gemini/config/AGENTS.md`가 있으면 자동으로 백업됩니다.
+기존 `~/.claude/CLAUDE.md`가 있으면 자동으로 백업됩니다.
 
 ## 5. 설치 확인 방법
 
 설치가 끝나면 PowerShell에서 아래 명령으로 확인합니다.
 
 ```powershell
-dir $HOME\.gemini\config
+dir $HOME\.claude
 ```
 
 다음 항목이 보이면 설치가 정상적으로 된 것입니다.
 
 ```text
-AGENTS.md
+CLAUDE.md
 agents
 skills
 config
@@ -95,14 +95,14 @@ docs
 Skill 폴더도 확인할 수 있습니다.
 
 ```powershell
-dir $HOME\.gemini\config\skills
+dir $HOME\.claude\skills
 ```
 
 `requirements-definition`, `mvp-planning`, `debugging-coach` 같은 폴더가 보이면 됩니다.
 
-## 6. 프로젝트 폴더에서 Antigravity 실행 방법
+## 6. 프로젝트 폴더에서 Claude 실행 방법
 
-Kit 설치 후에는 실제 프로젝트 폴더로 이동해서 Antigravity를 사용합니다.
+Kit 설치 후에는 실제 프로젝트 폴더로 이동해서 Claude를 사용합니다.
 
 예시:
 
@@ -110,15 +110,15 @@ Kit 설치 후에는 실제 프로젝트 폴더로 이동해서 Antigravity를 �
 cd C:\projects\my-ai-service
 ```
 
-그 다음 Antigravity를 실행합니다.
+그 다음 Claude를 실행합니다.
 
 ```powershell
-antigravity
+claude
 ```
 
-Antigravity 앱을 사용하는 경우에는 프로젝트 폴더를 열고, 해당 폴더 안에서 작업을 시작하면 됩니다.
+Claude 앱을 사용하는 경우에는 프로젝트 폴더를 열고, 해당 폴더 안에서 작업을 시작하면 됩니다.
 
-중요한 점은 Kit 폴더가 아니라, 내가 만들 AI 서비스 프로젝트 폴더에서 Antigravity를 실행하는 것입니다.
+중요한 점은 Kit 폴더가 아니라, 내가 만들 AI 서비스 프로젝트 폴더에서 Claude를 실행하는 것입니다.
 
 ## 7. 첫 요청 예시
 
@@ -156,7 +156,7 @@ AI 서비스 프로젝트 아이디어가 아직 명확하지 않아.
 → README / 보고서 작성
 ```
 
-각 단계에서 Antigravity에게 요청할 수 있는 예시는 다음과 같습니다.
+각 단계에서 Claude에게 요청할 수 있는 예시는 다음과 같습니다.
 
 | 단계 | 요청 예시 |
 | --- | --- |
@@ -193,7 +193,7 @@ app/main.py
 app/api/routes/summarize.py
 ```
 
-Antigravity에게 요청할 때는 다음을 함께 알려주면 좋습니다.
+Claude에게 요청할 때는 다음을 함께 알려주면 좋습니다.
 
 | 항목 | 예시 |
 | --- | --- |
@@ -250,7 +250,7 @@ GitHub에 올리기 전에는 반드시 보안 점검을 해야 합니다.
 | `auth.json` | 인증 정보가 들어갈 수 있습니다. |
 | 고객 데이터 | 개인정보 또는 회사 자료가 포함될 수 있습니다. |
 
-Antigravity에게 이렇게 요청하세요.
+Claude에게 이렇게 요청하세요.
 
 ```text
 GitHub에 push하기 전에 민감정보와 보안 위험을 점검해줘.
@@ -271,4 +271,5 @@ API Key, token, password, credentials.json, auth.json, .env 파일이 포함되�
 | 테스트하지 않고 완료했다고 생각함 | 실제 실행에서 오류가 날 수 있습니다. | 실행 명령과 테스트 방법으로 확인합니다. |
 
 프로젝트를 진행할 때 가장 중요한 기준은 작게 만들고, 실행해보고, 기록하는 것입니다.
+
 

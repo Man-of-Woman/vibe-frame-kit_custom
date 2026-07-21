@@ -1,4 +1,4 @@
-# 설치 테스트 절차
+﻿# 설치 테스트 절차
 
 이 문서는 `vibe-frame-kit`이 실제로 설치 가능한지 확인하기 위한 테스트 절차입니다.
 
@@ -25,16 +25,16 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 
 정상 설치되면 설치 완료 메시지가 출력되어야 합니다.
 
-### 3. ~/.gemini/config 폴더 확인
+### 3. ~/.claude 폴더 확인
 
 ```powershell
-dir $HOME\.gemini\config
+dir $HOME\.claude
 ```
 
 다음 항목이 보여야 합니다.
 
 ```text
-AGENTS.md
+CLAUDE.md
 agents
 skills
 config
@@ -43,28 +43,28 @@ templates
 docs
 ```
 
-### 4. AGENTS.md 설치 확인
+### 4. CLAUDE.md 설치 확인
 
 ```powershell
-Test-Path $HOME\.gemini\config\AGENTS.md
-Get-Content -Encoding UTF8 $HOME\.gemini\config\AGENTS.md | Select-Object -First 5
+Test-Path $HOME\.claude\CLAUDE.md
+Get-Content -Encoding UTF8 $HOME\.claude\CLAUDE.md | Select-Object -First 5
 ```
 
 확인 기준:
 
 - `True`가 출력됩니다.
-- `AGENTS.md` 상단 내용이 한국어로 표시됩니다.
+- `CLAUDE.md` 상단 내용이 한국어로 표시됩니다.
 
-기존 `AGENTS.md`가 있었다면 아래와 같은 백업 파일도 생성될 수 있습니다.
+기존 `CLAUDE.md`가 있었다면 아래와 같은 백업 파일도 생성될 수 있습니다.
 
 ```text
-AGENTS.md.backup.yyyymmdd-hhmmss
+CLAUDE.md.backup.yyyymmdd-hhmmss
 ```
 
 ### 5. skills 설치 확인
 
 ```powershell
-dir $HOME\.gemini\config\skills
+dir $HOME\.claude\skills
 ```
 
 다음 14개 Skill 폴더가 보여야 합니다.
@@ -89,39 +89,39 @@ test-planning-coach
 개별 Skill 파일도 확인합니다.
 
 ```powershell
-Test-Path $HOME\.gemini\config\skills\requirements-definition\SKILL.md
+Test-Path $HOME\.claude\skills\requirements-definition\SKILL.md
 ```
 
 ### 6. config 설치 확인
 
 ```powershell
-dir $HOME\.gemini\config\config
+dir $HOME\.claude\config
 ```
 
 다음 파일이 보여야 합니다.
 
 ```text
 lean-skills.txt
-antigravity.config.sample.toml
+claude.config.sample.toml
 ```
 
 내용 확인:
 
 ```powershell
-Get-Content -Encoding UTF8 $HOME\.gemini\config\config\lean-skills.txt
+Get-Content -Encoding UTF8 $HOME\.claude\config\lean-skills.txt
 ```
 
-### 7. Antigravity App 또는 CLI에서 확인할 프롬프트
+### 7. Claude App 또는 CLI에서 확인할 프롬프트
 
-새 프로젝트 폴더로 이동한 뒤 Antigravity를 실행합니다.
+새 프로젝트 폴더로 이동한 뒤 Claude를 실행합니다.
 
 ```powershell
 mkdir test-ai-service
 cd test-ai-service
-antigravity
+claude
 ```
 
-Antigravity App을 사용하는 경우에는 `test-ai-service` 폴더를 열고 아래 프롬프트를 입력합니다.
+Claude App을 사용하는 경우에는 `test-ai-service` 폴더를 열고 아래 프롬프트를 입력합니다.
 
 ```text
 나는 AI 회의록 요약 서비스를 만들고 싶어.
@@ -131,7 +131,7 @@ Vibe Frame Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작�
 
 확인 기준:
 
-- Antigravity가 한국어로 응답합니다.
+- Claude가 한국어로 응답합니다.
 - 바로 전체 코드를 만들지 않고 요구사항 정의부터 시작합니다.
 - 프로젝트 개요, 해결 문제, 대상 사용자, 입력 데이터, 핵심 기능, MVP 범위를 정리합니다.
 
@@ -141,9 +141,9 @@ Vibe Frame Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작�
 | --- | --- |
 | 스크립트 실행이 막힘 | `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1`로 실행했는지 확인합니다. |
 | `scripts\install.ps1`을 찾을 수 없음 | 현재 위치가 `vibe-frame-kit` 루트인지 확인합니다. |
-| `~/.gemini/config`에 파일이 없음 | 설치 중 오류 메시지를 확인하고 스크립트를 다시 실행합니다. |
+| `~/.claude`에 파일이 없음 | 설치 중 오류 메시지를 확인하고 스크립트를 다시 실행합니다. |
 | 한글이 깨져 보임 | `Get-Content -Encoding UTF8`로 다시 확인합니다. |
-| 기존 `AGENTS.md`가 사라진 것 같음 | `AGENTS.md.backup.*` 파일이 생성되었는지 확인합니다. |
+| 기존 `CLAUDE.md`가 사라진 것 같음 | `CLAUDE.md.backup.*` 파일이 생성되었는지 확인합니다. |
 | Skill 폴더가 일부 없음 | 저장소가 최신인지 확인하고 다시 clone합니다. |
 
 ## macOS/Linux 기준 테스트 절차
@@ -175,16 +175,16 @@ chmod +x scripts/install.sh
 
 정상 설치되면 설치 완료 메시지가 출력되어야 합니다.
 
-### 3. ~/.gemini/config 폴더 확인
+### 3. ~/.claude 폴더 확인
 
 ```bash
-ls -la ~/.gemini/config
+ls -la ~/.claude
 ```
 
 다음 항목이 보여야 합니다.
 
 ```text
-AGENTS.md
+CLAUDE.md
 agents
 skills
 config
@@ -193,28 +193,28 @@ templates
 docs
 ```
 
-### 4. AGENTS.md 설치 확인
+### 4. CLAUDE.md 설치 확인
 
 ```bash
-test -f ~/.gemini/config/AGENTS.md && echo "AGENTS.md installed"
-head -n 5 ~/.gemini/config/AGENTS.md
+test -f ~/.claude/CLAUDE.md && echo "CLAUDE.md installed"
+head -n 5 ~/.claude/CLAUDE.md
 ```
 
 확인 기준:
 
-- `AGENTS.md installed`가 출력됩니다.
-- `AGENTS.md` 상단 내용이 한국어로 표시됩니다.
+- `CLAUDE.md installed`가 출력됩니다.
+- `CLAUDE.md` 상단 내용이 한국어로 표시됩니다.
 
-기존 `AGENTS.md`가 있었다면 아래와 같은 백업 파일도 생성될 수 있습니다.
+기존 `CLAUDE.md`가 있었다면 아래와 같은 백업 파일도 생성될 수 있습니다.
 
 ```text
-AGENTS.md.backup.yyyymmdd-hhmmss
+CLAUDE.md.backup.yyyymmdd-hhmmss
 ```
 
 ### 5. skills 설치 확인
 
 ```bash
-ls ~/.gemini/config/skills
+ls ~/.claude/skills
 ```
 
 다음 14개 Skill 폴더가 보여야 합니다.
@@ -239,39 +239,39 @@ test-planning-coach
 개별 Skill 파일도 확인합니다.
 
 ```bash
-test -f ~/.gemini/config/skills/requirements-definition/SKILL.md && echo "requirements-definition installed"
+test -f ~/.claude/skills/requirements-definition/SKILL.md && echo "requirements-definition installed"
 ```
 
 ### 6. config 설치 확인
 
 ```bash
-ls ~/.gemini/config/config
+ls ~/.claude/config
 ```
 
 다음 파일이 보여야 합니다.
 
 ```text
 lean-skills.txt
-antigravity.config.sample.toml
+claude.config.sample.toml
 ```
 
 내용 확인:
 
 ```bash
-cat ~/.gemini/config/config/lean-skills.txt
+cat ~/.claude/config/lean-skills.txt
 ```
 
-### 7. Antigravity App 또는 CLI에서 확인할 프롬프트
+### 7. Claude App 또는 CLI에서 확인할 프롬프트
 
-새 프로젝트 폴더로 이동한 뒤 Antigravity를 실행합니다.
+새 프로젝트 폴더로 이동한 뒤 Claude를 실행합니다.
 
 ```bash
 mkdir test-ai-service
 cd test-ai-service
-antigravity
+claude
 ```
 
-Antigravity App을 사용하는 경우에는 `test-ai-service` 폴더를 열고 아래 프롬프트를 입력합니다.
+Claude App을 사용하는 경우에는 `test-ai-service` 폴더를 열고 아래 프롬프트를 입력합니다.
 
 ```text
 나는 AI 회의록 요약 서비스를 만들고 싶어.
@@ -281,7 +281,7 @@ Vibe Frame Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작�
 
 확인 기준:
 
-- Antigravity가 한국어로 응답합니다.
+- Claude가 한국어로 응답합니다.
 - 바로 전체 코드를 만들지 않고 요구사항 정의부터 시작합니다.
 - 프로젝트 개요, 해결 문제, 대상 사용자, 입력 데이터, 핵심 기능, MVP 범위를 정리합니다.
 
@@ -291,9 +291,10 @@ Vibe Frame Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작�
 | --- | --- |
 | `Permission denied`가 발생함 | `chmod +x scripts/install.sh`를 실행했는지 확인합니다. |
 | `scripts/install.sh`를 찾을 수 없음 | 현재 위치가 `vibe-frame-kit` 루트인지 확인합니다. |
-| `~/.gemini/config`에 파일이 없음 | 설치 중 오류 메시지를 확인하고 스크립트를 다시 실행합니다. |
-| 기존 `AGENTS.md`가 사라진 것 같음 | `ls ~/.gemini/config/AGENTS.md.backup.*`로 백업 파일을 확인합니다. |
+| `~/.claude`에 파일이 없음 | 설치 중 오류 메시지를 확인하고 스크립트를 다시 실행합니다. |
+| 기존 `CLAUDE.md`가 사라진 것 같음 | `ls ~/.claude/CLAUDE.md.backup.*`로 백업 파일을 확인합니다. |
 | Skill 폴더가 일부 없음 | 저장소가 최신인지 확인하고 다시 clone합니다. |
-| Antigravity가 Kit 흐름을 따르지 않음 | `~/.gemini/config/AGENTS.md`와 `~/.gemini/config/skills`가 설치되었는지 다시 확인합니다. |
+| Claude가 Kit 흐름을 따르지 않음 | `~/.claude/CLAUDE.md`와 `~/.claude/skills`가 설치되었는지 다시 확인합니다. |
+
 
 

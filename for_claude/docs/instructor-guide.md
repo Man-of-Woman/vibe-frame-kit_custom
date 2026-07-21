@@ -1,8 +1,8 @@
-# 강사 가이드
+﻿# 강사 가이드
 
 이 문서는 강사가 재직자 AI 서비스 개발 과정에서 `vibe-frame-kit`을 운영하기 위한 가이드입니다.
 
-이 Kit의 핵심 목적은 수강생이 Antigravity를 단순 코드 생성 도구로 사용하는 것이 아니라, 요구사항 정의부터 구현, 오류 분석, 테스트, 문서화까지 일관된 개발 흐름을 경험하도록 돕는 것입니다.
+이 Kit의 핵심 목적은 수강생이 Claude를 단순 코드 생성 도구로 사용하는 것이 아니라, 요구사항 정의부터 구현, 오류 분석, 테스트, 문서화까지 일관된 개발 흐름을 경험하도록 돕는 것입니다.
 
 ## 1. Kit 운영 목적
 
@@ -11,7 +11,7 @@
 | 운영 목적 | 설명 |
 | --- | --- |
 | 개발 흐름 표준화 | 요구사항 정의, 기능 분해, MVP 설계, 구현, 테스트, 문서화 순서를 따르게 합니다. |
-| Antigravity 사용 품질 향상 | 막연한 요청 대신 단계별 프롬프트를 사용하도록 지도합니다. |
+| Claude 사용 품질 향상 | 막연한 요청 대신 단계별 프롬프트를 사용하도록 지도합니다. |
 | MVP 중심 개발 | 수업 시간 안에 실행 가능한 결과물을 만들도록 범위를 줄입니다. |
 | 산출물 품질 향상 | README, 보고서, 테스트 결과 등 제출 자료를 체계화합니다. |
 | 보안 습관 형성 | API Key, token, `.env` 등 민감정보를 GitHub에 올리지 않도록 지도합니다. |
@@ -27,7 +27,7 @@
 | 학생 가이드 | `docs/student-guide.md`를 수강생에게 안내합니다. |
 | 예시 프로젝트 | 간단한 AI 서비스 예시를 하나 준비하면 좋습니다. |
 | API Key 안내 | OpenAI API 또는 Gemini API Key 발급 방법과 보안 주의사항을 안내합니다. |
-| 실습 환경 | Python, Git, Antigravity 실행 환경을 확인합니다. |
+| 실습 환경 | Python, Git, Claude 실행 환경을 확인합니다. |
 
 배포 방식 예시:
 
@@ -50,21 +50,21 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 설치 확인 명령:
 
 ```powershell
-dir $HOME\.gemini\config
-dir $HOME\.gemini\config\skills
+dir $HOME\.claude
+dir $HOME\.claude\skills
 ```
 
 확인해야 할 항목:
 
 | 항목 | 기대 결과 |
 | --- | --- |
-| `~/.gemini/config/AGENTS.md` | 파일이 존재해야 합니다. |
-| `~/.gemini/config/agents/` | `routing.md`가 있어야 합니다. |
-| `~/.gemini/config/skills/` | 14개 Skill 폴더가 있어야 합니다. |
-| `~/.gemini/config/config/` | `lean-skills.txt`, `antigravity.config.sample.toml`이 있어야 합니다. |
-| `~/.gemini/config/prompts/` | 12개 프롬프트 파일이 있어야 합니다. |
-| `~/.gemini/config/templates/` | 11개 템플릿 파일이 있어야 합니다. |
-| `~/.gemini/config/docs/` | 수강생 가이드 등이 있어야 합니다. |
+| `~/.claude/CLAUDE.md` | 파일이 존재해야 합니다. |
+| `~/.claude/agents/` | `routing.md`가 있어야 합니다. |
+| `~/.claude/skills/` | 14개 Skill 폴더가 있어야 합니다. |
+| `~/.claude/config/` | `lean-skills.txt`, `claude.config.sample.toml`이 있어야 합니다. |
+| `~/.claude/prompts/` | 12개 프롬프트 파일이 있어야 합니다. |
+| `~/.claude/templates/` | 11개 템플릿 파일이 있어야 합니다. |
+| `~/.claude/docs/` | 수강생 가이드 등이 있어야 합니다. |
 
 설치가 실패한 경우에는 PowerShell 실행 위치, 권한, 저장소 압축 해제 여부를 먼저 확인합니다.
 
@@ -76,7 +76,7 @@ dir $HOME\.gemini\config\skills
 
 | 순서 | 활동 | 목표 |
 | --- | --- | --- |
-| 1 | Kit 설치 확인 | 모든 수강생의 Antigravity 설정 준비 |
+| 1 | Kit 설치 확인 | 모든 수강생의 Claude 설정 준비 |
 | 2 | 프로젝트 아이디어 작성 | 만들 서비스의 주제 정하기 |
 | 3 | 요구사항 정의 프롬프트 사용 | 아이디어를 요구사항 정의서로 변환 |
 | 4 | 기능 분해 프롬프트 사용 | 구현 가능한 기능 단위로 나누기 |
@@ -111,7 +111,7 @@ dir $HOME\.gemini\config\skills
 
 - 빈칸을 최대한 구체적으로 채우게 합니다.
 - "전체 만들어줘"보다 "이 기능 하나를 구현해줘"라고 요청하게 합니다.
-- Antigravity 답변을 그대로 믿지 말고 실행과 테스트로 확인하게 합니다.
+- Claude 답변을 그대로 믿지 말고 실행과 테스트로 확인하게 합니다.
 - 산출물은 `templates/` 양식에 맞춰 정리하게 합니다.
 
 ## 6. 프로젝트별 적용 방식
@@ -261,14 +261,15 @@ API Key, token, password, credentials.json, auth.json, .env 파일이 포함되�
 | 문제 | 원인 | 대응법 |
 | --- | --- | --- |
 | 설치 스크립트가 실행되지 않음 | PowerShell 실행 정책 또는 경로 문제 | `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1`로 실행하게 합니다. |
-| `~/.gemini/config`에 파일이 없음 | 설치 위치가 잘못되었거나 스크립트 실행 실패 | `dir $HOME\.gemini\config`로 확인하고 다시 설치합니다. |
+| `~/.claude`에 파일이 없음 | 설치 위치가 잘못되었거나 스크립트 실행 실패 | `dir $HOME\.claude`로 확인하고 다시 설치합니다. |
 | 수강생이 전체 서비스를 한 번에 요청함 | 개발 범위를 줄이는 경험 부족 | 요구사항 정의와 MVP 설계부터 다시 진행시킵니다. |
 | 오류 로그 없이 질문함 | 에러 메시지의 중요성을 모름 | 실행 명령, 전체 로그, 관련 파일을 함께 보내게 합니다. |
 | API Key가 코드에 들어감 | 환경 변수 사용 경험 부족 | `.env`와 `.env.example` 차이를 다시 설명합니다. |
 | README가 부실함 | 문서화를 마지막 작업으로만 생각함 | 중간 점검 때 README 초안을 제출하게 합니다. |
 | 기능이 너무 많아 미완성됨 | MVP 범위 설정 실패 | 핵심 입력, AI 처리, 출력 결과만 남기게 합니다. |
-| Antigravity 답변을 그대로 복사함 | 검증 습관 부족 | 반드시 실행과 테스트 결과를 기록하게 합니다. |
+| Claude 답변을 그대로 복사함 | 검증 습관 부족 | 반드시 실행과 테스트 결과를 기록하게 합니다. |
 | 팀원별 코드가 충돌함 | 역할 분담과 파일 소유가 불명확함 | 기능 단위로 담당자를 나누고 수정 파일을 공유하게 합니다. |
 
-강사의 핵심 역할은 Antigravity가 만든 결과를 대신 검증해주는 것이 아니라, 수강생이 요구사항, 범위, 실행, 테스트, 문서화의 흐름을 스스로 익히도록 돕는 것입니다.
+강사의 핵심 역할은 Claude가 만든 결과를 대신 검증해주는 것이 아니라, 수강생이 요구사항, 범위, 실행, 테스트, 문서화의 흐름을 스스로 익히도록 돕는 것입니다.
+
 
