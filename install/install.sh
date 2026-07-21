@@ -112,6 +112,31 @@ copy_and_replace_directory() {
   done
 }
 
+deploy_ignore_files() {
+  local repo_root="$1"
+  
+  local ignore_content
+  ignore_content="# vibe-frame-kit ignore rules
+*.backup.*
+backup.*
+venv/
+.venv/
+node_modules/
+.git/
+common/
+install/
+walkthrough/"
+
+  local ignore_files=(".cursorignore" ".geminiignore" ".gitignore")
+  for file in "${ignore_files[@]}"; do
+    local file_path="$repo_root/$file"
+    if [ ! -f "$file_path" ]; then
+      echo "$ignore_content" > "$file_path"
+      success "Created $file at repository root to prevent token waste."
+    fi
+  done
+}
+
 TOOL=""
 
 # 파라미터 처리 (-t <tool>)
@@ -206,6 +231,7 @@ fi
 
 # 복사 및 변수 치환 배포
 copy_and_replace_directory "$SOURCE_COMMON_DIR" "$INSTALL_BASE_DIR"
+deploy_ignore_files "$REPO_ROOT"
 success "프레임워크 코어 파일 배포 및 템플릿 치환이 완료되었습니다."
 
 printf '\n'

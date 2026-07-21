@@ -120,6 +120,32 @@ function Safe-CopyAndReplaceDirectory {
     }
 }
 
+function Deploy-IgnoreFiles {
+    param([string]$RepoRoot)
+    
+    $IgnoreContent = @(
+        "# vibe-frame-kit ignore rules",
+        "*.backup.*",
+        "backup.*",
+        "venv/",
+        ".venv/",
+        "node_modules/",
+        ".git/",
+        "common/",
+        "install/",
+        "walkthrough/"
+    ) -join "`r`n"
+    
+    $IgnoreFiles = @(".cursorignore", ".geminiignore", ".gitignore")
+    foreach ($File in $IgnoreFiles) {
+        $FilePath = Join-Path $RepoRoot $File
+        if (-not (Test-Path $FilePath)) {
+            Set-Content -Path $FilePath -Value $IgnoreContent -Encoding UTF8
+            Write-Success "Created $File at repository root to prevent token waste."
+        }
+    }
+}
+
 # ==========================================================
 # 2. Global settings
 # ==========================================================
@@ -220,6 +246,7 @@ try {
 
     # Consolidate and copy
     Safe-CopyAndReplaceDirectory -SourceDir $SourceCommonDir -TargetDir $InstallBaseDir -Mappings $Mappings
+    Deploy-IgnoreFiles -RepoRoot $RepoRoot
     Write-Success "Framework files deployed and template variables substituted."
 
     Write-Host ""

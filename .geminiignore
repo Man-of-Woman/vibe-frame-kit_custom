@@ -1,0 +1,10 @@
+﻿# vibe-frame-kit ignore rules
+*.backup.*
+backup.*
+venv/
+.venv/
+node_modules/
+.git/
+common/
+install/
+walkthrough/
