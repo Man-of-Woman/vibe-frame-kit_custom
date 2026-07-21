@@ -1,4 +1,4 @@
-# 설치 테스트 절차
+﻿# 설치 테스트 절차
 
 이 문서는 `vibe-frame-kit`이 실제로 설치 가능한지 확인하기 위한 테스트 절차입니다.
 
@@ -25,10 +25,10 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 
 정상 설치되면 설치 완료 메시지가 출력되어야 합니다.
 
-### 3. ~/.codex 폴더 확인
+### 3. ~/.codex/config 폴더 확인
 
 ```powershell
-dir $HOME\.codex
+dir $HOME\.codex\config
 ```
 
 다음 항목이 보여야 합니다.
@@ -38,13 +38,16 @@ AGENTS.md
 agents
 skills
 config
+prompts
+templates
+docs
 ```
 
 ### 4. AGENTS.md 설치 확인
 
 ```powershell
-Test-Path $HOME\.codex\AGENTS.md
-Get-Content -Encoding UTF8 $HOME\.codex\AGENTS.md | Select-Object -First 5
+Test-Path $HOME\.codex\config\AGENTS.md
+Get-Content -Encoding UTF8 $HOME\.codex\config\AGENTS.md | Select-Object -First 5
 ```
 
 확인 기준:
@@ -61,34 +64,38 @@ AGENTS.md.backup.yyyymmdd-hhmmss
 ### 5. skills 설치 확인
 
 ```powershell
-dir $HOME\.codex\skills
+dir $HOME\.codex\config\skills
 ```
 
-다음 Skill 폴더가 보여야 합니다.
+다음 14개 Skill 폴더가 보여야 합니다.
 
 ```text
-requirements-definition
+ai-agent-workflow-builder
+api-service-builder
+backlog-planning
+context-map-builder
+debugging-coach
+domain-model-builder
 function-breakdown
 mvp-planning
 project-structure-builder
-api-service-builder
-ai-agent-workflow-builder
-debugging-coach
-refactoring-coach
 readme-report-writer
+refactoring-coach
+requirements-definition
 security-checker
+test-planning-coach
 ```
 
 개별 Skill 파일도 확인합니다.
 
 ```powershell
-Test-Path $HOME\.codex\skills\requirements-definition\SKILL.md
+Test-Path $HOME\.codex\config\skills\requirements-definition\SKILL.md
 ```
 
 ### 6. config 설치 확인
 
 ```powershell
-dir $HOME\.codex\config
+dir $HOME\.codex\config\config
 ```
 
 다음 파일이 보여야 합니다.
@@ -101,7 +108,7 @@ codex.config.sample.toml
 내용 확인:
 
 ```powershell
-Get-Content -Encoding UTF8 $HOME\.codex\config\lean-skills.txt
+Get-Content -Encoding UTF8 $HOME\.codex\config\config\lean-skills.txt
 ```
 
 ### 7. Codex App 또는 CLI에서 확인할 프롬프트
@@ -134,7 +141,7 @@ Vibe Frame Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작�
 | --- | --- |
 | 스크립트 실행이 막힘 | `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1`로 실행했는지 확인합니다. |
 | `scripts\install.ps1`을 찾을 수 없음 | 현재 위치가 `vibe-frame-kit` 루트인지 확인합니다. |
-| `~/.codex`에 파일이 없음 | 설치 중 오류 메시지를 확인하고 스크립트를 다시 실행합니다. |
+| `~/.codex/config`에 파일이 없음 | 설치 중 오류 메시지를 확인하고 스크립트를 다시 실행합니다. |
 | 한글이 깨져 보임 | `Get-Content -Encoding UTF8`로 다시 확인합니다. |
 | 기존 `AGENTS.md`가 사라진 것 같음 | `AGENTS.md.backup.*` 파일이 생성되었는지 확인합니다. |
 | Skill 폴더가 일부 없음 | 저장소가 최신인지 확인하고 다시 clone합니다. |
@@ -168,10 +175,10 @@ chmod +x scripts/install.sh
 
 정상 설치되면 설치 완료 메시지가 출력되어야 합니다.
 
-### 3. ~/.codex 폴더 확인
+### 3. ~/.codex/config 폴더 확인
 
 ```bash
-ls -la ~/.codex
+ls -la ~/.codex/config
 ```
 
 다음 항목이 보여야 합니다.
@@ -181,13 +188,16 @@ AGENTS.md
 agents
 skills
 config
+prompts
+templates
+docs
 ```
 
 ### 4. AGENTS.md 설치 확인
 
 ```bash
-test -f ~/.codex/AGENTS.md && echo "AGENTS.md installed"
-head -n 5 ~/.codex/AGENTS.md
+test -f ~/.codex/config/AGENTS.md && echo "AGENTS.md installed"
+head -n 5 ~/.codex/config/AGENTS.md
 ```
 
 확인 기준:
@@ -204,34 +214,38 @@ AGENTS.md.backup.yyyymmdd-hhmmss
 ### 5. skills 설치 확인
 
 ```bash
-ls ~/.codex/skills
+ls ~/.codex/config/skills
 ```
 
-다음 Skill 폴더가 보여야 합니다.
+다음 14개 Skill 폴더가 보여야 합니다.
 
 ```text
-requirements-definition
+ai-agent-workflow-builder
+api-service-builder
+backlog-planning
+context-map-builder
+debugging-coach
+domain-model-builder
 function-breakdown
 mvp-planning
 project-structure-builder
-api-service-builder
-ai-agent-workflow-builder
-debugging-coach
-refactoring-coach
 readme-report-writer
+refactoring-coach
+requirements-definition
 security-checker
+test-planning-coach
 ```
 
 개별 Skill 파일도 확인합니다.
 
 ```bash
-test -f ~/.codex/skills/requirements-definition/SKILL.md && echo "requirements-definition installed"
+test -f ~/.codex/config/skills/requirements-definition/SKILL.md && echo "requirements-definition installed"
 ```
 
 ### 6. config 설치 확인
 
 ```bash
-ls ~/.codex/config
+ls ~/.codex/config/config
 ```
 
 다음 파일이 보여야 합니다.
@@ -244,7 +258,7 @@ codex.config.sample.toml
 내용 확인:
 
 ```bash
-cat ~/.codex/config/lean-skills.txt
+cat ~/.codex/config/config/lean-skills.txt
 ```
 
 ### 7. Codex App 또는 CLI에서 확인할 프롬프트
@@ -277,8 +291,10 @@ Vibe Frame Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작�
 | --- | --- |
 | `Permission denied`가 발생함 | `chmod +x scripts/install.sh`를 실행했는지 확인합니다. |
 | `scripts/install.sh`를 찾을 수 없음 | 현재 위치가 `vibe-frame-kit` 루트인지 확인합니다. |
-| `~/.codex`에 파일이 없음 | 설치 중 오류 메시지를 확인하고 스크립트를 다시 실행합니다. |
-| 기존 `AGENTS.md`가 사라진 것 같음 | `ls ~/.codex/AGENTS.md.backup.*`로 백업 파일을 확인합니다. |
+| `~/.codex/config`에 파일이 없음 | 설치 중 오류 메시지를 확인하고 스크립트를 다시 실행합니다. |
+| 기존 `AGENTS.md`가 사라진 것 같음 | `ls ~/.codex/config/AGENTS.md.backup.*`로 백업 파일을 확인합니다. |
 | Skill 폴더가 일부 없음 | 저장소가 최신인지 확인하고 다시 clone합니다. |
-| Codex가 Kit 흐름을 따르지 않음 | `~/.codex/AGENTS.md`와 `~/.codex/skills`가 설치되었는지 다시 확인합니다. |
+| Codex가 Kit 흐름을 따르지 않음 | `~/.codex/config/AGENTS.md`와 `~/.codex/config/skills`가 설치되었는지 다시 확인합니다. |
+
+
 

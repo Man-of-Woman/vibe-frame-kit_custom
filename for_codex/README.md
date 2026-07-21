@@ -81,7 +81,11 @@ vibe-frame-kit/
 │   ├── debugging-coach/
 │   ├── refactoring-coach/
 │   ├── readme-report-writer/
-│   └── security-checker/
+│   ├── security-checker/
+│   ├── domain-model-builder/
+│   ├── backlog-planning/
+│   ├── context-map-builder/
+│   └── test-planning-coach/
 ├── prompts/
 │   ├── 01-requirements.md
 │   ├── 02-function-breakdown.md
@@ -91,7 +95,10 @@ vibe-frame-kit/
 │   ├── 06-debugging.md
 │   ├── 07-refactoring.md
 │   ├── 08-readme-report.md
-│   └── 09-security-check.md
+│   ├── 09-security-check.md
+│   ├── 10-backlog-planning.md
+│   ├── 11-context-map.md
+│   └── 12-test-planning.md
 ├── templates/
 │   ├── requirements-template.md
 │   ├── function-breakdown-template.md
@@ -100,7 +107,10 @@ vibe-frame-kit/
 │   ├── agent-workflow-template.md
 │   ├── test-scenario-template.md
 │   ├── readme-template.md
-│   └── final-report-template.md
+│   ├── final-report-template.md
+│   ├── domain-model-template.md
+│   ├── backlog-plan-template.md
+│   └── context-map-template.md
 ├── config/
 │   ├── lean-skills.txt
 │   └── codex.config.sample.toml
@@ -121,9 +131,9 @@ vibe-frame-kit/
 | `README.md` | Kit의 목적, 사용 방법, 전체 구조를 설명합니다. |
 | `AGENTS.md` | Codex가 프로젝트에서 따를 공통 작업 규칙을 정의합니다. |
 | `agents/routing.md` | 작업 단계별로 어떤 역할 또는 흐름을 사용할지 정리합니다. |
-| `skills/` | 요구사항 정의, 기능 분해, MVP 설계, 구현, 디버깅, 문서화, 보안 점검 Skill을 보관합니다. |
+| `skills/` | 요구사항 정의, 기능 분해, MVP 설계, 도메인 모델 설계, 구현, 디버깅, 애자일 백로그 계획, 컨텍스트 의존성 관리, 문서화, 보안 점검 Skill을 보관합니다. |
 | `prompts/` | 수강생이 복사해서 사용할 수 있는 단계별 프롬프트를 보관합니다. |
-| `templates/` | 요구사항 정의서, 기능 분해표, MVP 계획서, API 명세서, 테스트 시나리오, README, 최종 보고서 양식을 보관합니다. |
+| `templates/` | 요구사항 정의서, 기능 분해표, MVP 계획서, 도메인 모델 명세서, API 명세서, 테스트 시나리오, 이터레이션 백로그 계획서, 컨텍스트 맵, README, 최종 보고서 양식을 보관합니다. |
 | `config/` | 기본 Skill 목록과 Codex 설정 샘플을 보관합니다. |
 | `scripts/` | Windows/macOS/Linux 설치 스크립트를 보관합니다. |
 | `docs/` | 수강생 가이드, 강사 가이드, 보안 체크리스트를 보관합니다. |

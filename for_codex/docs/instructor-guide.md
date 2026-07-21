@@ -1,4 +1,4 @@
-# 강사 가이드
+﻿# 강사 가이드
 
 이 문서는 강사가 재직자 AI 서비스 개발 과정에서 `vibe-frame-kit`을 운영하기 위한 가이드입니다.
 
@@ -26,7 +26,7 @@
 | 설치 스크립트 | Windows용 `scripts/install.ps1`, macOS/Linux용 `scripts/install.sh`가 포함되어 있는지 확인합니다. |
 | 학생 가이드 | `docs/student-guide.md`를 수강생에게 안내합니다. |
 | 예시 프로젝트 | 간단한 AI 서비스 예시를 하나 준비하면 좋습니다. |
-| API Key 안내 | OpenAI API 또는 Gemini API Key 발급 방법과 보안 주의사항을 안내합니다. |
+| API Key 안내 | OpenAI API 또는 Codex API Key 발급 방법과 보안 주의사항을 안내합니다. |
 | 실습 환경 | Python, Git, Codex 실행 환경을 확인합니다. |
 
 배포 방식 예시:
@@ -50,18 +50,21 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 설치 확인 명령:
 
 ```powershell
-dir $HOME\.codex
-dir $HOME\.codex\skills
+dir $HOME\.codex\config
+dir $HOME\.codex\config\skills
 ```
 
 확인해야 할 항목:
 
 | 항목 | 기대 결과 |
 | --- | --- |
-| `~/.codex/AGENTS.md` | 파일이 존재해야 합니다. |
-| `~/.codex/agents/` | `routing.md`가 있어야 합니다. |
-| `~/.codex/skills/` | 10개 Skill 폴더가 있어야 합니다. |
-| `~/.codex/config/` | `lean-skills.txt`, `codex.config.sample.toml`이 있어야 합니다. |
+| `~/.codex/config/AGENTS.md` | 파일이 존재해야 합니다. |
+| `~/.codex/config/agents/` | `routing.md`가 있어야 합니다. |
+| `~/.codex/config/skills/` | 14개 Skill 폴더가 있어야 합니다. |
+| `~/.codex/config/config/` | `lean-skills.txt`, `codex.config.sample.toml`이 있어야 합니다. |
+| `~/.codex/config/prompts/` | 12개 프롬프트 파일이 있어야 합니다. |
+| `~/.codex/config/templates/` | 11개 템플릿 파일이 있어야 합니다. |
+| `~/.codex/config/docs/` | 수강생 가이드 등이 있어야 합니다. |
 
 설치가 실패한 경우에는 PowerShell 실행 위치, 권한, 저장소 압축 해제 여부를 먼저 확인합니다.
 
@@ -258,7 +261,7 @@ API Key, token, password, credentials.json, auth.json, .env 파일이 포함되�
 | 문제 | 원인 | 대응법 |
 | --- | --- | --- |
 | 설치 스크립트가 실행되지 않음 | PowerShell 실행 정책 또는 경로 문제 | `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1`로 실행하게 합니다. |
-| `~/.codex`에 파일이 없음 | 설치 위치가 잘못되었거나 스크립트 실행 실패 | `dir $HOME\.codex`로 확인하고 다시 설치합니다. |
+| `~/.codex/config`에 파일이 없음 | 설치 위치가 잘못되었거나 스크립트 실행 실패 | `dir $HOME\.codex\config`로 확인하고 다시 설치합니다. |
 | 수강생이 전체 서비스를 한 번에 요청함 | 개발 범위를 줄이는 경험 부족 | 요구사항 정의와 MVP 설계부터 다시 진행시킵니다. |
 | 오류 로그 없이 질문함 | 에러 메시지의 중요성을 모름 | 실행 명령, 전체 로그, 관련 파일을 함께 보내게 합니다. |
 | API Key가 코드에 들어감 | 환경 변수 사용 경험 부족 | `.env`와 `.env.example` 차이를 다시 설명합니다. |
@@ -268,4 +271,5 @@ API Key, token, password, credentials.json, auth.json, .env 파일이 포함되�
 | 팀원별 코드가 충돌함 | 역할 분담과 파일 소유가 불명확함 | 기능 단위로 담당자를 나누고 수정 파일을 공유하게 합니다. |
 
 강사의 핵심 역할은 Codex가 만든 결과를 대신 검증해주는 것이 아니라, 수강생이 요구사항, 범위, 실행, 테스트, 문서화의 흐름을 스스로 익히도록 돕는 것입니다.
+
 

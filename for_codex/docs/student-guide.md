@@ -1,4 +1,4 @@
-# 수강생 가이드
+﻿# 수강생 가이드
 
 이 문서는 재직자 AI 서비스 개발 과정 수강생이 `vibe-frame-kit`을 설치하고 사용하는 방법을 설명합니다.
 
@@ -58,23 +58,26 @@ Windows PowerShell에서 아래 명령을 실행합니다.
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
-이 명령은 현재 Kit의 다음 항목을 사용자 폴더의 `~/.codex`로 복사합니다.
+이 명령은 현재 Kit의 다음 항목을 사용자 폴더의 `~/.codex/config`로 복사합니다.
 
 | 복사 대상 | 설치 위치 |
 | --- | --- |
-| `AGENTS.md` | `~/.codex/AGENTS.md` |
-| `agents/` | `~/.codex/agents/` |
-| `skills/` | `~/.codex/skills/` |
-| `config/` | `~/.codex/config/` |
+| `AGENTS.md` | `~/.codex/config/AGENTS.md` |
+| `agents/` | `~/.codex/config/agents/` |
+| `skills/` | `~/.codex/config/skills/` |
+| `config/` | `~/.codex/config/config/` |
+| `prompts/` | `~/.codex/config/prompts/` |
+| `templates/` | `~/.codex/config/templates/` |
+| `docs/` | `~/.codex/config/docs/` |
 
-기존 `~/.codex/AGENTS.md`가 있으면 자동으로 백업됩니다.
+기존 `~/.codex/config/AGENTS.md`가 있으면 자동으로 백업됩니다.
 
 ## 5. 설치 확인 방법
 
 설치가 끝나면 PowerShell에서 아래 명령으로 확인합니다.
 
 ```powershell
-dir $HOME\.codex
+dir $HOME\.codex\config
 ```
 
 다음 항목이 보이면 설치가 정상적으로 된 것입니다.
@@ -84,12 +87,15 @@ AGENTS.md
 agents
 skills
 config
+prompts
+templates
+docs
 ```
 
 Skill 폴더도 확인할 수 있습니다.
 
 ```powershell
-dir $HOME\.codex\skills
+dir $HOME\.codex\config\skills
 ```
 
 `requirements-definition`, `mvp-planning`, `debugging-coach` 같은 폴더가 보이면 됩니다.
@@ -265,4 +271,5 @@ API Key, token, password, credentials.json, auth.json, .env 파일이 포함되�
 | 테스트하지 않고 완료했다고 생각함 | 실제 실행에서 오류가 날 수 있습니다. | 실행 명령과 테스트 방법으로 확인합니다. |
 
 프로젝트를 진행할 때 가장 중요한 기준은 작게 만들고, 실행해보고, 기록하는 것입니다.
+
 

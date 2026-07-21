@@ -31,6 +31,9 @@ debugging = "debugging-coach"
 refactoring = "refactoring-coach"
 documentation = "readme-report-writer"
 security = "security-checker"
+domain_modeling = "domain-model-builder"
+backlog_planning = "backlog-planning"
+context_mapping = "context-map-builder"
 
 [defaults]
 # 수강생 프로젝트에서는 단계별 안내와 작은 변경을 기본으로 합니다.
@@ -70,6 +73,9 @@ api_spec_doc = "docs/api-spec.md"
 agent_workflow_doc = "docs/agent-workflow.md"
 test_scenario_doc = "docs/test-scenario.md"
 final_report_doc = "docs/final-report.md"
+domain_model_doc = "docs/domain-model.md"
+backlog_plan_doc = "docs/backlog-plan.md"
+context_map_doc = "docs/context-map.md"
 
 [commands]
 # 프로젝트마다 실행 명령이 다를 수 있으므로 샘플만 제공합니다.
@@ -77,4 +83,5 @@ final_report_doc = "docs/final-report.md"
 backend_dev = "uvicorn app.main:app --reload"
 frontend_dev = "npm run dev"
 test = "pytest"
+
 
