@@ -44,43 +44,43 @@
 * **설치 명령**:
   ```powershell
   # 대화식 선택 설치
-  powershell -ExecutionPolicy Bypass -File .\install.ps1
+  powershell -ExecutionPolicy Bypass -File .\install\install.ps1
 
   # 또는 특정 툴 명시 설치
-  powershell -ExecutionPolicy Bypass -File .\install.ps1 -Tool gemini
-  powershell -ExecutionPolicy Bypass -File .\install.ps1 -Tool claude
-  powershell -ExecutionPolicy Bypass -File .\install.ps1 -Tool codex
+  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool gemini
+  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool claude
+  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool codex
   ```
 * **제거 명령**:
   ```powershell
   # 대화식 선택 제거
-  powershell -ExecutionPolicy Bypass -File .\uninstall.ps1
+  powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1
 
   # 또는 특정 툴 명시 제거
-  powershell -ExecutionPolicy Bypass -File .\uninstall.ps1 -Tool gemini
+  powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1 -Tool gemini
   ```
 
 ### 2) macOS / Linux 환경 (Bash)
 * **설치 명령**:
   ```bash
   # 스크립트 실행 권한 부여
-  chmod +x install.sh uninstall.sh
+  chmod +x install/install.sh install/uninstall.sh
 
   # 대화식 선택 설치
-  ./install.sh
+  ./install/install.sh
 
   # 또는 특정 툴 명시 설치
-  ./install.sh -t gemini
-  ./install.sh -t claude
-  ./install.sh -t codex
+  ./install/install.sh -t gemini
+  ./install/install.sh -t claude
+  ./install/install.sh -t codex
   ```
 * **제거 명령**:
   ```bash
   # 대화식 선택 제거
-  ./uninstall.sh
+  ./install/uninstall.sh
 
   # 또는 특정 툴 명시 제거
-  ./uninstall.sh -t gemini
+  ./install/uninstall.sh -t gemini
   ```
 
 ---

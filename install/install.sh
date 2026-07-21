@@ -170,7 +170,7 @@ case "$TOOL" in
 esac
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$SCRIPT_DIR"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 TIMESTAMP="$(date +"%Y%m%d-%H%M%S")"
 
 info "vibe-frame-kit ($AGENT_NAME 환경) 설치를 시작합니다."

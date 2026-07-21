@@ -1,4 +1,4 @@
-﻿# 수강생 가이드
+# 수강생 가이드
 
 이 문서는 재직자 AI 서비스 개발 과정 수강생이 `vibe-frame-kit`을 설치하고 사용하는 방법을 설명합니다.
 
@@ -55,7 +55,7 @@ cd vibe-frame-kit
 Windows PowerShell에서 아래 명령을 실행합니다.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
+powershell -ExecutionPolicy Bypass -File .\install\install.ps1
 ```
 
 이 명령은 현재 Kit의 다음 항목을 사용자 폴더의 `{{INSTALL_PATH}}`로 복사합니다.
