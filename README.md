@@ -10,11 +10,11 @@
 
 프로젝트 폴더 구조는 대상 개발 툴의 특성과 기능 지원 범위에 맞춰 최적화되어 분류되어 있습니다.
 
-| 폴더명 | 대상 개발 툴 | 특징 | 설치 경로 |
+| 설치 유형 | 대상 개발 툴 | 변환 적용 및 특징 | 설치 경로 |
 | --- | --- | --- | --- |
-| **`for_codex`** | **Codex (Cursor 등)** | 일반적이고 심플한 기능 구현 프롬프트 제공 (10개 스킬) | `~/.codex` |
-| **`for_gemini`** | **Antigravity (Google Gemini)** | 강력한 에이전트 환경 및 Context Map, Agile 백로그 등을 포함한 설계 중심 프롬프트 제공 (14개 스킬) | `~/.gemini/config` |
-| **`for_claude`** | **Claude (Desktop / Code CLI)** | Claude Code CLI의 자동 지시사항 연동 규격(`CLAUDE.md`)을 지원하는 에이전트용 프레임워크 (14개 스킬) | `~/.claude` |
+| **`gemini`** | **Antigravity (Google Gemini)** | Gemini CLI 및 앱 전역 설정 연동 (14개 스킬) | `~/.gemini/config` |
+| **`claude`** | **Claude (Desktop / Code CLI)** | Claude Code CLI 자동 규칙(`CLAUDE.md`) 연동 (14개 스킬) | `~/.claude` |
+| **`codex`** | **Codex (Cursor 등)** | Codex/Cursor 전역 가이드 설정 연동 (14개 스킬) | `~/.codex` |
 
 ---
 
@@ -38,54 +38,49 @@
 
 ## 3. 설치 및 제거 방법
 
-각 개발 툴 폴더 내의 `scripts/` 디렉토리에 사용자 컴퓨터 환경에 맞는 설치(`install`) 및 제거(`uninstall`) 스크립트가 제공됩니다.
+루트 디렉토리에 통합된 스마트 인스톨러(`install.ps1`, `install.sh`)를 사용하여 간단하게 설치할 수 있습니다. 스크립트 실행 시 대화식으로 설치할 툴을 선택하거나, `-t` 또는 `-Tool` 인자값으로 명시하여 설치할 수 있습니다.
 
-### 1) Codex 프레임워크 설치/제거
-* **Windows (PowerShell)**:
+### 1) Windows 환경 (PowerShell)
+* **설치 명령**:
   ```powershell
-  # 설치
-  powershell -ExecutionPolicy Bypass -File .\for_codex\scripts\install.ps1
-  # 제거
-  powershell -ExecutionPolicy Bypass -File .\for_codex\scripts\uninstall.ps1
-  ```
-* **macOS / Linux (Bash)**:
-  ```bash
-  # 설치
-  chmod +x for_codex/scripts/install.sh && ./for_codex/scripts/install.sh
-  # 제거
-  chmod +x for_codex/scripts/uninstall.sh && ./for_codex/scripts/uninstall.sh
-  ```
+  # 대화식 선택 설치
+  powershell -ExecutionPolicy Bypass -File .\install.ps1
 
-### 2) Gemini 프레임워크 설치/제거
-* **Windows (PowerShell)**:
-  ```powershell
-  # 설치
-  powershell -ExecutionPolicy Bypass -File .\for_gemini\scripts\install.ps1
-  # 제거
-  powershell -ExecutionPolicy Bypass -File .\for_gemini\scripts\uninstall.ps1
+  # 또는 특정 툴 명시 설치
+  powershell -ExecutionPolicy Bypass -File .\install.ps1 -Tool gemini
+  powershell -ExecutionPolicy Bypass -File .\install.ps1 -Tool claude
+  powershell -ExecutionPolicy Bypass -File .\install.ps1 -Tool codex
   ```
-* **macOS / Linux (Bash)**:
-  ```bash
-  # 설치
-  chmod +x for_gemini/scripts/install.sh && ./for_gemini/scripts/install.sh
-  # 제거
-  chmod +x for_gemini/scripts/uninstall.sh && ./for_gemini/scripts/uninstall.sh
+* **제거 명령**:
+  ```powershell
+  # 대화식 선택 제거
+  powershell -ExecutionPolicy Bypass -File .\uninstall.ps1
+
+  # 또는 특정 툴 명시 제거
+  powershell -ExecutionPolicy Bypass -File .\uninstall.ps1 -Tool gemini
   ```
 
-### 3) Claude 프레임워크 설치/제거
-* **Windows (PowerShell)**:
-  ```powershell
-  # 설치
-  powershell -ExecutionPolicy Bypass -File .\for_claude\scripts\install.ps1
-  # 제거
-  powershell -ExecutionPolicy Bypass -File .\for_claude\scripts\uninstall.ps1
-  ```
-* **macOS / Linux (Bash)**:
+### 2) macOS / Linux 환경 (Bash)
+* **설치 명령**:
   ```bash
-  # 설치
-  chmod +x for_claude/scripts/install.sh && ./for_claude/scripts/install.sh
-  # 제거
-  chmod +x for_claude/scripts/uninstall.sh && ./for_claude/scripts/uninstall.sh
+  # 스크립트 실행 권한 부여
+  chmod +x install.sh uninstall.sh
+
+  # 대화식 선택 설치
+  ./install.sh
+
+  # 또는 특정 툴 명시 설치
+  ./install.sh -t gemini
+  ./install.sh -t claude
+  ./install.sh -t codex
+  ```
+* **제거 명령**:
+  ```bash
+  # 대화식 선택 제거
+  ./uninstall.sh
+
+  # 또는 특정 툴 명시 제거
+  ./uninstall.sh -t gemini
   ```
 
 ---
