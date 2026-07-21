@@ -13,7 +13,7 @@
 | 폴더명 | 대상 개발 툴 | 특징 | 설치 경로 |
 | --- | --- | --- | --- |
 | **`for_codex`** | **Codex (Cursor 등)** | 일반적이고 심플한 기능 구현 프롬프트 제공 (10개 스킬) | `~/.codex` |
-| **`for_antigravity`** | **Antigravity (Google Gemini)** | 강력한 에이전트 환경 및 Context Map, Agile 백로그 등을 포함한 설계 중심 프롬프트 제공 (14개 스킬) | `~/.gemini/config` |
+| **`for_gemini`** | **Antigravity (Google Gemini)** | 강력한 에이전트 환경 및 Context Map, Agile 백로그 등을 포함한 설계 중심 프롬프트 제공 (14개 스킬) | `~/.gemini/config` |
 | **`for_claude`** | **Claude (Desktop / Code CLI)** | Claude Code CLI의 자동 지시사항 연동 규격(`CLAUDE.md`)을 지원하는 에이전트용 프레임워크 (14개 스킬) | `~/.claude` |
 
 ---
@@ -56,20 +56,20 @@
   chmod +x for_codex/scripts/uninstall.sh && ./for_codex/scripts/uninstall.sh
   ```
 
-### 2) Antigravity 프레임워크 설치/제거
+### 2) Gemini 프레임워크 설치/제거
 * **Windows (PowerShell)**:
   ```powershell
   # 설치
-  powershell -ExecutionPolicy Bypass -File .\for_antigravity\scripts\install.ps1
+  powershell -ExecutionPolicy Bypass -File .\for_gemini\scripts\install.ps1
   # 제거
-  powershell -ExecutionPolicy Bypass -File .\for_antigravity\scripts\uninstall.ps1
+  powershell -ExecutionPolicy Bypass -File .\for_gemini\scripts\uninstall.ps1
   ```
 * **macOS / Linux (Bash)**:
   ```bash
   # 설치
-  chmod +x for_antigravity/scripts/install.sh && ./for_antigravity/scripts/install.sh
+  chmod +x for_gemini/scripts/install.sh && ./for_gemini/scripts/install.sh
   # 제거
-  chmod +x for_antigravity/scripts/uninstall.sh && ./for_antigravity/scripts/uninstall.sh
+  chmod +x for_gemini/scripts/uninstall.sh && ./for_gemini/scripts/uninstall.sh
   ```
 
 ### 3) Claude 프레임워크 설치/제거

@@ -144,14 +144,14 @@ vibe-frame-kit/
 Windows PowerShell:
 ```bash
 git clone https://github.com/PieterKim/vibe-frame-kit.git
-cd vibe-frame-kit/for_antigravity
+cd vibe-frame-kit/for_gemini
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
 macOS/Linux:
 ```bash
 git clone https://github.com/PieterKim/vibe-frame-kit.git
-cd vibe-frame-kit/for_antigravity
+cd vibe-frame-kit/for_gemini
 chmod +x scripts/install.sh
 ./scripts/install.sh
 ```
