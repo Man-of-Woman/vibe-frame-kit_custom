@@ -123,8 +123,8 @@ function Safe-CopyAndReplaceDirectory {
 function Deploy-IgnoreFiles {
     param([string]$RepoRoot)
     
-    $IgnoreContent = @(
-        "# vibe-frame-kit ignore rules",
+    $AgentIgnoreContent = @(
+        "# vibe-frame-kit ignore rules (AI Agent indexing)",
         "*.backup.*",
         "backup.*",
         "venv/",
@@ -136,14 +136,32 @@ function Deploy-IgnoreFiles {
         "walkthrough/",
         "study/"
     ) -join "`r`n"
+
+    $GitIgnoreContent = @(
+        "# vibe-frame-kit ignore rules (Git version control)",
+        "*.backup.*",
+        "backup.*",
+        "venv/",
+        ".venv/",
+        "node_modules/",
+        ".env",
+        ".env.local",
+        ".env.*.local"
+    ) -join "`r`n"
     
-    $IgnoreFiles = @(".cursorignore", ".geminiignore", ".gitignore")
-    foreach ($File in $IgnoreFiles) {
+    $AgentFiles = @(".cursorignore", ".geminiignore")
+    foreach ($File in $AgentFiles) {
         $FilePath = Join-Path $RepoRoot $File
         if (-not (Test-Path $FilePath)) {
-            Set-Content -Path $FilePath -Value $IgnoreContent -Encoding UTF8
+            Set-Content -Path $FilePath -Value $AgentIgnoreContent -Encoding UTF8
             Write-Success "Created $File at repository root to prevent token waste."
         }
+    }
+
+    $GitIgnorePath = Join-Path $RepoRoot ".gitignore"
+    if (-not (Test-Path $GitIgnorePath)) {
+        Set-Content -Path $GitIgnorePath -Value $GitIgnoreContent -Encoding UTF8
+        Write-Success "Created .gitignore at repository root to secure credentials."
     }
 }
 

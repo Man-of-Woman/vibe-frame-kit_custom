@@ -1,10 +1,9 @@
-﻿# vibe-frame-kit ignore rules
+# vibe-frame-kit ignore rules (Git version control)
 *.backup.*
 backup.*
 venv/
 .venv/
 node_modules/
-.git/
-common/
-install/
-walkthrough/
+.env
+.env.local
+.env.*.local

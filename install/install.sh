@@ -115,8 +115,8 @@ copy_and_replace_directory() {
 deploy_ignore_files() {
   local repo_root="$1"
   
-  local ignore_content
-  ignore_content="# vibe-frame-kit ignore rules
+  local agent_ignore_content
+  agent_ignore_content="# vibe-frame-kit ignore rules (AI Agent indexing)
 *.backup.*
 backup.*
 venv/
@@ -128,14 +128,31 @@ install/
 walkthrough/
 study/"
 
-  local ignore_files=(".cursorignore" ".geminiignore" ".gitignore")
-  for file in "${ignore_files[@]}"; do
+  local git_ignore_content
+  git_ignore_content="# vibe-frame-kit ignore rules (Git version control)
+*.backup.*
+backup.*
+venv/
+.venv/
+node_modules/
+.env
+.env.local
+.env.*.local"
+
+  local agent_files=(".cursorignore" ".geminiignore")
+  for file in "${agent_files[@]}"; do
     local file_path="$repo_root/$file"
     if [ ! -f "$file_path" ]; then
-      echo "$ignore_content" > "$file_path"
+      echo "$agent_ignore_content" > "$file_path"
       success "Created $file at repository root to prevent token waste."
     fi
   done
+
+  local git_ignore_path="$repo_root/.gitignore"
+  if [ ! -f "$git_ignore_path" ]; then
+    echo "$git_ignore_content" > "$git_ignore_path"
+    success "Created .gitignore at repository root to secure credentials."
+  fi
 }
 
 TOOL=""
