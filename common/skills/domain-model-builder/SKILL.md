@@ -43,4 +43,4 @@ Antigravity는 도메인 모델 설계 결과를 Markdown 문서 형식으로 �
 
 ## 6. 도메인 모델 명세서 템플릿
 
-`templates/domain-model-template.md` 파일의 형식을 기본 템플릿으로 사용하여 도메인 모델 명세서를 작성합니다.
+`{{INSTALL_PATH}}/templates/domain-model-template.md` 파일의 형식을 기본 템플릿으로 사용하여 도메인 모델 명세서를 작성합니다.

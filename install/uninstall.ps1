@@ -90,7 +90,8 @@ try {
         "config",
         "prompts",
         "templates",
-        "docs"
+        "docs",
+        "study"
     )
 
     foreach ($ItemName in $TargetItems) {

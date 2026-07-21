@@ -40,4 +40,4 @@ Antigravity는 백로그 계획 결과를 Markdown 문서 형식으로 작성하
 
 ## 6. 백로그 계획서 템플릿
 
-`templates/backlog-plan-template.md` 파일의 형식을 기본 템플릿으로 사용하여 백로그 계획서를 작성합니다.
+`{{INSTALL_PATH}}/templates/backlog-plan-template.md` 파일의 형식을 기본 템플릿으로 사용하여 백로그 계획서를 작성합니다.

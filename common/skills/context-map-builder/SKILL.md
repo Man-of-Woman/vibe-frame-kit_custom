@@ -37,4 +37,4 @@ Antigravity는 컨텍스트 맵 결과를 Markdown 문서 형식으로 작성하
 
 ## 6. 컨텍스트 맵 템플릿
 
-`templates/context-map-template.md` 파일의 형식을 기본 템플릿으로 사용하여 컨텍스트 맵을 작성합니다.
+`{{INSTALL_PATH}}/templates/context-map-template.md` 파일의 형식을 기본 템플릿으로 사용하여 컨텍스트 맵을 작성합니다.

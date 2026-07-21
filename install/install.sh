@@ -125,7 +125,8 @@ node_modules/
 .git/
 common/
 install/
-walkthrough/"
+walkthrough/
+study/"
 
   local ignore_files=(".cursorignore" ".geminiignore" ".gitignore")
   for file in "${ignore_files[@]}"; do
@@ -211,7 +212,7 @@ if [ ! -d "$SOURCE_COMMON_DIR" ]; then
 fi
 
 # 기존 디렉토리 백업
-DIRECTORIES_TO_COPY=("agents" "skills" "config" "prompts" "templates" "docs")
+DIRECTORIES_TO_COPY=("agents" "skills" "config" "prompts" "templates" "docs" "study")
 for dir_name in "${DIRECTORIES_TO_COPY[@]}"; do
   target_dir="$INSTALL_BASE_DIR/$dir_name"
   if [ -d "$target_dir" ]; then
@@ -244,6 +245,7 @@ printf -- '- %s/config/\n' "$INSTALL_PATH"
 printf -- '- %s/prompts/\n' "$INSTALL_PATH"
 printf -- '- %s/templates/\n' "$INSTALL_PATH"
 printf -- '- %s/docs/\n' "$INSTALL_PATH"
+printf -- '- %s/study/\n' "$INSTALL_PATH"
 printf '\n'
 
 printf '\033[33m=============================================\033[0m\n'

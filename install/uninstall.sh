@@ -91,6 +91,7 @@ TARGET_ITEMS=(
   "prompts"
   "templates"
   "docs"
+  "study"
 )
 
 for item_name in "${TARGET_ITEMS[@]}"; do

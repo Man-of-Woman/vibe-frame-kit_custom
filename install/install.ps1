@@ -133,7 +133,8 @@ function Deploy-IgnoreFiles {
         ".git/",
         "common/",
         "install/",
-        "walkthrough/"
+        "walkthrough/",
+        "study/"
     ) -join "`r`n"
     
     $IgnoreFiles = @(".cursorignore", ".geminiignore", ".gitignore")
@@ -226,7 +227,7 @@ try {
     }
 
     # Backup existing directories
-    $DirectoriesToCopy = @("agents", "skills", "config", "prompts", "templates", "docs")
+    $DirectoriesToCopy = @("agents", "skills", "config", "prompts", "templates", "docs", "study")
     foreach ($DirName in $DirectoriesToCopy) {
         $TargetDir = Join-Path $InstallBaseDir $DirName
         if (Test-Path $TargetDir) {
@@ -259,6 +260,7 @@ try {
     Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/prompts/"
     Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/templates/"
     Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/docs/"
+    Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/study/"
 
     Write-Host ""
     Write-Host "=============================================" -ForegroundColor Yellow
