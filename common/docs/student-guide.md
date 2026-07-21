@@ -272,4 +272,27 @@ API Key, token, password, credentials.json, auth.json, .env 파일이 포함되�
 
 프로젝트를 진행할 때 가장 중요한 기준은 작게 만들고, 실행해보고, 기록하는 것입니다.
 
+## 13. 완료 보고서(Walkthrough) 및 Git 자동 커밋/푸시 설정 제어
 
+프로젝트 관리의 연속성을 보장하기 위해, 이 프레임워크는 작업 완료 시 **완료 보고서(Walkthrough) 작성**과 **Git 커밋/푸시 유도** 자동화 규칙을 탑재하고 있습니다. 이 동작은 프로젝트 루트의 `config.toml`에서 필요에 따라 직접 On/Off 제어할 수 있습니다.
+
+### 1) 설정 항목 및 의미
+`config.toml`의 하단에 추가된 옵션을 통해 에이전트의 완료 행동을 제어합니다.
+
+```toml
+[walkthrough]
+# 작업 완료 단계에서 walkthrough/ 폴더 하위에 완료 보고서 자동 생성을 유도할지 여부
+enable_generation = true
+# 보고서 상단에 지시사항 원문, 사용한 AI 모델, 수행 시간, 소모 토큰을 기록할지 여부
+enable_metadata_logging = true
+
+[git]
+# 작업 완료 및 승인 후 자동으로 git add, commit, push 명령어를 가이드하거나 proposal할지 여부
+auto_commit_push = true
+# Git 커밋 메시지를 한글 기반으로 가이드할지 여부
+korean_commit_message = true
+```
+
+### 2) 사용 팁
+- **과제 제출 단계**: 보고서와 기여도 기록을 남기기 위해 `enable_generation`과 `auto_commit_push`를 모두 `true`로 설정하고 실습하는 것을 권장합니다.
+- **순수 개발 단계**: 매 단순 수정 작업마다 완료 보고서나 푸시 안내를 유발하는 것이 번거롭다면, 이 값들을 `false`로 꺼서 보다 신속하고 유연한 코딩 세션을 유지할 수 있습니다.

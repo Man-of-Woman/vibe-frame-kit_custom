@@ -86,3 +86,15 @@ backend_dev = "uvicorn app.main:app --reload"
 frontend_dev = "npm run dev"
 test = "pytest"
 
+[walkthrough]
+# 작업 완료 시 walkthrough/ 폴더 하위에 완료 보고서를 자동 생성하도록 에이전트에 지시합니다. (true/false)
+enable_generation = true
+# 보고서 최상단에 사용자의 지시사항 원문을 인용하고, 사용한 AI 모델/수행시간/소모토큰을 로깅할지 여부입니다. (true/false)
+enable_metadata_logging = true
+
+[git]
+# 작업 완료 및 승인 후 자동으로 git add, commit, push 명령어를 가이드하거나 수행하도록 유도합니다. (true/false)
+auto_commit_push = true
+# Git 커밋 메시지를 한글 기반으로 작성할지 여부입니다. (true/false)
+korean_commit_message = true
+

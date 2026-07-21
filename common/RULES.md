@@ -33,3 +33,7 @@
 * 프로젝트 마무리에 수강생이 README 및 최종 보고서를 정리하도록 안내합니다.
 * README는 소개, 주요 기능, 기술 스택, 설치/실행법, 테스트 방법, 폴더 구조, 한계점 및 개선 방향을 포함해야 합니다.
 * 수업 제출용 산출물(요구사항 정의서, MVP 명세, 테스트 결과, 최종 보고서)을 일관성 있게 구성하도록 최종 유도합니다.
+* **조건부 완료 보고서 및 Git 자동화 제어 (config.toml 참조)**:
+  - `[walkthrough] enable_generation = true` 인 경우: 작업 완료 단계 진입 시 수강생에게 저장 승인을 먼저 구한 뒤 `walkthrough/` 하위에 `YYYYMMDD_순번_커밋메시지.md` 파일을 자동 생성해 주어야 합니다. (false일 경우 생성을 건너뜁니다)
+  - `[walkthrough] enable_metadata_logging = true` 인 경우: 보고서 최상단에 지시사항 원문, 사용한 AI 모델명, 작업 수행 시간(초) 및 소모 토큰 정보를 인용 기재해야 합니다.
+  - `[git] auto_commit_push = true` 인 경우: 작업 및 보고서 저장 완료 후, 한글 커밋 메시지 규칙(`korean_commit_message` 참조)을 준수한 git add/commit/push 명령어를 수강생에게 안내하거나 proposal을 내놓아야 합니다.
