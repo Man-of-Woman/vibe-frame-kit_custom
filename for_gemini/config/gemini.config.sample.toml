@@ -1,4 +1,4 @@
-# antigravity.config.sample.toml
+# gemini.config.sample.toml
 #
 # vibe-frame-kit 사용자를 위한 샘플 설정 파일입니다.
 # 실제 프로젝트에 맞게 복사해서 수정하되, API Key, token, password 같은

@@ -61,7 +61,7 @@ dir $HOME\.gemini\config\skills
 | `~/.gemini/config/AGENTS.md` | 파일이 존재해야 합니다. |
 | `~/.gemini/config/agents/` | `routing.md`가 있어야 합니다. |
 | `~/.gemini/config/skills/` | 14개 Skill 폴더가 있어야 합니다. |
-| `~/.gemini/config/config/` | `lean-skills.txt`, `antigravity.config.sample.toml`이 있어야 합니다. |
+| `~/.gemini/config/config/` | `lean-skills.txt`, `gemini.config.sample.toml`이 있어야 합니다. |
 | `~/.gemini/config/prompts/` | 12개 프롬프트 파일이 있어야 합니다. |
 | `~/.gemini/config/templates/` | 11개 템플릿 파일이 있어야 합니다. |
 | `~/.gemini/config/docs/` | 수강생 가이드 등이 있어야 합니다. |

@@ -109,7 +109,7 @@ vibe-frame-kit/
 │   └── context-map-template.md
 ├── config/
 │   ├── lean-skills.txt
-│   └── antigravity.config.sample.toml
+│   └── gemini.config.sample.toml
 ├── scripts/
 │   ├── install.ps1
 │   └── install.sh

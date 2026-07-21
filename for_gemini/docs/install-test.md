@@ -102,7 +102,7 @@ dir $HOME\.gemini\config\config
 
 ```text
 lean-skills.txt
-antigravity.config.sample.toml
+gemini.config.sample.toml
 ```
 
 내용 확인:
@@ -252,7 +252,7 @@ ls ~/.gemini/config/config
 
 ```text
 lean-skills.txt
-antigravity.config.sample.toml
+gemini.config.sample.toml
 ```
 
 내용 확인:
