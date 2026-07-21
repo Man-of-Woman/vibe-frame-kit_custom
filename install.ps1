@@ -232,6 +232,18 @@ try {
     Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/prompts/"
     Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/templates/"
     Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/docs/"
+
+    Write-Host ""
+    Write-Host "=============================================" -ForegroundColor Yellow
+    Write-Host " [설정 적용 안내 / Action Required]" -ForegroundColor Yellow
+    Write-Host "=============================================" -ForegroundColor Yellow
+    Write-Host " 1. 샘플 TOML 파일 저장 경로:" -ForegroundColor Cyan
+    Write-Host "    $($Mappings['{{INSTALL_PATH}}'])/config/$($Mappings['{{CONFIG_FILE}}'])" -ForegroundColor White
+    Write-Host " 2. 정상 작동을 위한 활성화 방법:" -ForegroundColor Cyan
+    Write-Host "    - 위 샘플 파일을 복사하여 사용하는 '프로젝트 루트 폴더'에 넣습니다." -ForegroundColor White
+    Write-Host "    - 파일명을 'config.toml'로 변경해야 설정 내용이 에이전트에 반영됩니다." -ForegroundColor White
+    Write-Host "      (예: $($Mappings['{{CONFIG_FILE}}']) -> config.toml)" -ForegroundColor Gray
+    Write-Host "=============================================" -ForegroundColor Yellow
 }
 catch {
     Write-Host ""

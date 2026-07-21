@@ -219,3 +219,15 @@ printf -- '- %s/prompts/\n' "$INSTALL_PATH"
 printf -- '- %s/templates/\n' "$INSTALL_PATH"
 printf -- '- %s/docs/\n' "$INSTALL_PATH"
 printf '\n'
+
+printf '\033[33m=============================================\033[0m\n'
+printf '\033[33m [설정 적용 안내 / Action Required]\033[0m\n'
+printf '\033[33m=============================================\033[0m\n'
+printf ' 1. 샘플 TOML 파일 저장 경로:\n'
+printf '    %s/config/%s\n' "$INSTALL_PATH" "$CONFIG_FILE"
+printf ' 2. 정상 작동을 위한 활성화 방법:\n'
+printf '    - 위 샘플 파일을 복사하여 사용하는 '\''프로젝트 루트 폴더'\''에 넣습니다.\n'
+printf '    - 파일명을 '\''config.toml'\''로 변경해야 설정 내용이 에이전트에 반영됩니다.\n'
+printf '      (예: %s -> config.toml)\n' "$CONFIG_FILE"
+printf '\033[33m=============================================\033[0m\n'
+printf '\n'
