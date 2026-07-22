@@ -91,8 +91,8 @@ copy_and_replace_directory() {
     local rel_path="${item#$src_dir/}"
     local dest_item="$dest_dir/$rel_path"
     
-    # RULES.md ➡️ RULES_FILE 명칭 변경
-    if [ "$rel_path" = "RULES.md" ]; then
+    # AGENTS.md ➡️ RULES_FILE 명칭 변경
+    if [ "$rel_path" = "AGENTS.md" ]; then
       dest_item="$dest_dir/$RULES_FILE"
     # common.config.sample.toml ➡️ CONFIG_FILE 명칭 변경
     elif [ "$rel_path" = "config/common.config.sample.toml" ]; then
@@ -307,6 +307,14 @@ if [ -f "$TARGET_RULES_FILE" ]; then
   BACKUP_RULES_PATH="$INSTALL_BASE_DIR/${RULES_FILE}.backup.$TIMESTAMP"
   cp "$TARGET_RULES_FILE" "$BACKUP_RULES_PATH"
   success "기존 $RULES_FILE 파일을 백업했습니다: $BACKUP_RULES_PATH"
+fi
+
+# 기존 RULES.md 파일 백업
+TARGET_RULES_MD_FILE="$INSTALL_BASE_DIR/RULES.md"
+if [ -f "$TARGET_RULES_MD_FILE" ]; then
+  BACKUP_RULES_MD_PATH="$INSTALL_BASE_DIR/RULES.md.backup.$TIMESTAMP"
+  cp "$TARGET_RULES_MD_FILE" "$BACKUP_RULES_MD_PATH"
+  success "기존 RULES.md 파일을 백업했습니다: $BACKUP_RULES_MD_PATH"
 fi
 
 # 복사 및 변수 치환 배포

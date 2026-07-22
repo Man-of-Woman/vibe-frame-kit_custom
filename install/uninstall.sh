@@ -85,6 +85,7 @@ fi
 # 삭제할 파일 및 폴더 목록
 TARGET_ITEMS=(
   "$RULES_FILE"
+  "RULES.md"
   "agents"
   "skills"
   "config"

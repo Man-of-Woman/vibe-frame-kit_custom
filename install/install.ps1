@@ -84,7 +84,7 @@ function Safe-CopyAndReplaceDirectory {
         
         # Handle rename cases
         $DestinationRelativePath = $RelativePath
-        if ($RelativePath -eq "RULES.md") {
+        if ($RelativePath -eq "AGENTS.md") {
             $DestinationRelativePath = $Mappings["{{RULES_FILE}}"]
         }
         elseif ($RelativePath -eq "config\common.config.sample.toml") {
@@ -317,6 +317,14 @@ try {
         $BackupRulesPath = Join-Path $InstallBaseDir "$($Mappings['{{RULES_FILE}}']).backup.$Timestamp"
         Copy-Item -Path $TargetRulesFile -Destination $BackupRulesPath -Force
         Write-Success "Backed up existing rules file to $BackupRulesPath"
+    }
+
+    # Backup existing RULES.md file
+    $TargetRulesMdFile = Join-Path $InstallBaseDir "RULES.md"
+    if (Test-Path $TargetRulesMdFile) {
+        $BackupRulesMdPath = Join-Path $InstallBaseDir "RULES.md.backup.$Timestamp"
+        Copy-Item -Path $TargetRulesMdFile -Destination $BackupRulesMdPath -Force
+        Write-Success "Backed up existing RULES.md file to $BackupRulesMdPath"
     }
 
     # Consolidate and copy

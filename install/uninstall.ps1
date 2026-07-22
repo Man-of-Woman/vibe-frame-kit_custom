@@ -85,6 +85,7 @@ try {
     # Items to remove
     $TargetItems = @(
         $RulesFile,
+        "RULES.md",
         "agents",
         "skills",
         "config",
