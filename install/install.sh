@@ -166,7 +166,7 @@ node_modules/
 TOOL=""
 GIT_URL=""
 
-# 파라미터 처리 (-t <tool>, -g <git_remote_url>)
+# 파라미터 처리 (-t <tool1,tool2>, -g <git_remote_url>)
 while getopts "t:g:" opt; do
   case $opt in
     t) TOOL="$OPTARG" ;;
@@ -175,32 +175,74 @@ while getopts "t:g:" opt; do
   esac
 done
 
-# 대화식 선택 루프
+# 대화식 선택 루프 (체크박스형 복수 선택)
+selected_gemini=false
+selected_claude=false
+selected_codex=false
+
 if [ -z "$TOOL" ]; then
-  echo "============================================="
-  echo " vibe-frame-kit 통합 설치를 시작합니다."
-  echo "============================================="
-  echo " vibe-frame-kit 통합 설치를 시작합니다."
-  echo "============================================="
-  echo "설치할 AI 개발 툴 환경을 선택하세요:"
-  echo "1) Gemini (Antigravity)"
-  echo "2) Claude (Desktop / Code CLI)"
-  echo "3) Codex (Cursor 등)"
-  read -rp "선택 (1-3): " Choice
-  case "$Choice" in
-    1) TOOL="gemini" ;;
-    2) TOOL="claude" ;;
-    3) TOOL="codex" ;;
-    *) fail "잘못된 선택입니다. 설치를 중단합니다." ; exit 1 ;;
-  esac
+  while true; do
+    clear
+    echo "============================================="
+    echo " vibe-frame-kit 통합 설치를 시작합니다."
+    echo "============================================="
+    echo "설치할 AI 개발 툴 환경을 선택하세요 (복수 선택 가능):"
+    echo " (번호를 입력하여 토글하고, 엔터를 누르면 확정됩니다. 예: 1 또는 1,2)"
+    echo ""
+    
+    check_gemini="[ ]"
+    [ "$selected_gemini" = true ] && check_gemini="[X]"
+    check_claude="[ ]"
+    [ "$selected_claude" = true ] && check_claude="[X]"
+    check_codex="[ ]"
+    [ "$selected_codex" = true ] && check_codex="[X]"
+
+    echo "  $check_gemini 1) Gemini (Antigravity)"
+    echo "  $check_claude 2) Claude (Desktop / Code CLI)"
+    echo "  $check_codex 3) Codex (Cursor 등)"
+    echo ""
+    
+    read -rp "선택 (1-3, 확정하려면 Enter): " Choice
+    Choice=$(echo "$Choice" | tr -d '\r')
+    if [ -z "$Choice" ]; then
+      if [ "$selected_gemini" = false ] && [ "$selected_claude" = false ] && [ "$selected_codex" = false ]; then
+        fail "최소 하나의 툴을 선택해야 합니다."
+        sleep 1
+        continue
+      else
+        break
+      fi
+    fi
+
+    # 쉼표로 분할하여 처리
+    IFS=',' read -r -a choices_arr <<< "$Choice"
+    for val in "${choices_arr[@]}"; do
+      val=$(echo "$val" | tr -d '[:space:]')
+      case "$val" in
+        1) [ "$selected_gemini" = true ] && selected_gemini=false || selected_gemini=true ;;
+        2) [ "$selected_claude" = true ] && selected_claude=false || selected_claude=true ;;
+        3) [ "$selected_codex" = true ] && selected_codex=false || selected_codex=true ;;
+        *) fail "잘못된 입력입니다: $val (1-3 입력 가능)" ; sleep 1 ;;
+      esac
+    done
+  done
+
+  # 선택된 결과를 TOOL 변수에 결합
+  [ "$selected_gemini" = true ] && TOOL="${TOOL:+$TOOL,}gemini"
+  [ "$selected_claude" = true ] && TOOL="${TOOL:+$TOOL,}claude"
+  [ "$selected_codex" = true ] && TOOL="${TOOL:+$TOOL,}codex"
 fi
+
+IFS=',' read -r -a selected_tools_arr <<< "$TOOL"
 
 if [ -z "$GIT_URL" ]; then
   read -rp "프로젝트 Git 원격 저장소 주소를 입력하세요 (선택사항, 건너뛰려면 Enter): " GIT_URL
+  GIT_URL=$(echo "$GIT_URL" | tr -d '\r')
   if [ -n "$GIT_URL" ] && ! is_valid_git_url "$GIT_URL"; then
     while true; do
       fail "유효하지 않은 Git 주소 형식입니다. 올바른 주소를 입력하거나 건너뛰려면 Enter를 누르세요."
       read -rp "프로젝트 Git 원격 저장소 주소를 입력하세요 (Optional): " GIT_URL
+      GIT_URL=$(echo "$GIT_URL" | tr -d '\r')
       if [ -z "$GIT_URL" ] || is_valid_git_url "$GIT_URL"; then
         break
       fi
@@ -215,7 +257,7 @@ fi
 SPECIFY_FOLDER=""
 while [[ "$SPECIFY_FOLDER" != "Y" && "$SPECIFY_FOLDER" != "N" ]]; do
   read -rp "프로젝트 폴더를 지정하여 config.toml을 바로 배포하시겠습니까? (Y/N): " SPECIFY_FOLDER
-  SPECIFY_FOLDER=$(echo "$SPECIFY_FOLDER" | tr '[:lower:]' '[:upper:]')
+  SPECIFY_FOLDER=$(echo "$SPECIFY_FOLDER" | tr -d '\r' | tr '[:lower:]' '[:upper:]')
 done
 
 PROJ_FOLDER=""
@@ -225,6 +267,7 @@ DEPLOY_CONFIG_DIRECTLY=false
 if [ "$SPECIFY_FOLDER" = "Y" ]; then
   while [ -z "$PROJ_FOLDER" ]; do
     read -rp "프로젝트 폴더 경로를 입력하세요 (예: /workspace/my-project): " PROJ_FOLDER
+    PROJ_FOLDER=$(echo "$PROJ_FOLDER" | tr -d '\r')
   done
 
   # 절대경로 획득
@@ -239,97 +282,102 @@ if [ "$SPECIFY_FOLDER" = "Y" ]; then
 
   DEFAULT_PROJ_NAME=$(basename "$PROJ_FOLDER")
   read -rp "프로젝트 이름을 입력하세요 [기본값: $DEFAULT_PROJ_NAME]: " PROJ_NAME
+  PROJ_NAME=$(echo "$PROJ_NAME" | tr -d '\r')
   if [ -z "$PROJ_NAME" ]; then
     PROJ_NAME="$DEFAULT_PROJ_NAME"
   fi
   DEPLOY_CONFIG_DIRECTLY=true
 fi
 
-# 변수 테이블 바인딩
-case "$TOOL" in
-  gemini)
-    INSTALL_BASE_DIR="$HOME/.gemini/config"
-    AGENT_NAME="Gemini"
-    INSTALL_PATH="~/.gemini/config"
-    CONFIG_FILE="gemini.config.sample.toml"
-    RULES_FILE="AGENTS.md"
-    ;;
-  claude)
-    INSTALL_BASE_DIR="$HOME/.claude"
-    AGENT_NAME="Claude"
-    INSTALL_PATH="~/.claude"
-    CONFIG_FILE="claude.config.sample.toml"
-    RULES_FILE="CLAUDE.md"
-    ;;
-  codex)
-    INSTALL_BASE_DIR="$HOME/.codex"
-    AGENT_NAME="Codex"
-    INSTALL_PATH="~/.codex"
-    CONFIG_FILE="codex.config.sample.toml"
-    RULES_FILE="AGENTS.md"
-    ;;
-  *)
-    fail "지원하지 않는 툴 유형입니다: $TOOL"
-    exit 1
-    ;;
-esac
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 TIMESTAMP="$(date +"%Y%m%d-%H%M%S")"
 
-info "vibe-frame-kit ($AGENT_NAME 환경) 설치를 시작합니다."
-info "저장소 위치: $REPO_ROOT"
-info "설치 위치: $INSTALL_BASE_DIR"
-info "프로젝트 Git 원격 저장소 주소: $GIT_URL"
-mkdir -p "$INSTALL_BASE_DIR"
-
-SOURCE_COMMON_DIR="$REPO_ROOT/common"
-if [ ! -d "$SOURCE_COMMON_DIR" ]; then
-  fail "공통 소스 폴더를 찾을 수 없습니다: $SOURCE_COMMON_DIR"
-  exit 1
-fi
-
-# 기존 디렉토리 백업
-DIRECTORIES_TO_COPY=("agents" "skills" "config" "prompts" "templates" "docs" "study")
-for dir_name in "${DIRECTORIES_TO_COPY[@]}"; do
-  target_dir="$INSTALL_BASE_DIR/$dir_name"
-  if [ -d "$target_dir" ]; then
-    BACKUP_DIR="$INSTALL_BASE_DIR/${dir_name}.backup.$TIMESTAMP"
-    cp -R "$target_dir" "$BACKUP_DIR"
-    success "기존 $dir_name 폴더를 백업했습니다: $BACKUP_DIR"
-  fi
-done
-
-# 기존 규칙 파일 백업
-TARGET_RULES_FILE="$INSTALL_BASE_DIR/$RULES_FILE"
-if [ -f "$TARGET_RULES_FILE" ]; then
-  BACKUP_RULES_PATH="$INSTALL_BASE_DIR/${RULES_FILE}.backup.$TIMESTAMP"
-  cp "$TARGET_RULES_FILE" "$BACKUP_RULES_PATH"
-  success "기존 $RULES_FILE 파일을 백업했습니다: $BACKUP_RULES_PATH"
-fi
-
-# 기존 RULES.md 파일 백업
-TARGET_RULES_MD_FILE="$INSTALL_BASE_DIR/RULES.md"
-if [ -f "$TARGET_RULES_MD_FILE" ]; then
-  BACKUP_RULES_MD_PATH="$INSTALL_BASE_DIR/RULES.md.backup.$TIMESTAMP"
-  cp "$TARGET_RULES_MD_FILE" "$BACKUP_RULES_MD_PATH"
-  success "기존 RULES.md 파일을 백업했습니다: $BACKUP_RULES_MD_PATH"
-fi
-
-# 복사 및 변수 치환 배포
-copy_and_replace_directory "$SOURCE_COMMON_DIR" "$INSTALL_BASE_DIR"
+# deploy ignore files at repository root once
 deploy_ignore_files "$REPO_ROOT"
-success "프레임워크 코어 파일 배포 및 템플릿 치환이 완료되었습니다."
 
-# config.toml 파일 직접 배포
-if [ "$DEPLOY_CONFIG_DIRECTLY" = true ]; then
-  SAMPLE_CONFIG_FILE="$SOURCE_COMMON_DIR/config/common.config.sample.toml"
-  TARGET_CONFIG_PATH="$PROJ_FOLDER/config.toml"
-  if [ -f "$SAMPLE_CONFIG_FILE" ]; then
-    cp "$SAMPLE_CONFIG_FILE" "$TARGET_CONFIG_PATH"
-    if command -v python3 &>/dev/null; then
-      python3 -c "
+for current_tool in "${selected_tools_arr[@]}"; do
+  current_tool=$(echo "$current_tool" | tr -d '[:space:]')
+  # 변수 테이블 바인딩
+  case "$current_tool" in
+    gemini)
+      INSTALL_BASE_DIR="$HOME/.gemini/config"
+      AGENT_NAME="Gemini"
+      INSTALL_PATH="~/.gemini/config"
+      CONFIG_FILE="gemini.config.sample.toml"
+      RULES_FILE="AGENTS.md"
+      ;;
+    claude)
+      INSTALL_BASE_DIR="$HOME/.claude"
+      AGENT_NAME="Claude"
+      INSTALL_PATH="~/.claude"
+      CONFIG_FILE="claude.config.sample.toml"
+      RULES_FILE="CLAUDE.md"
+      ;;
+    codex)
+      INSTALL_BASE_DIR="$HOME/.codex"
+      AGENT_NAME="Codex"
+      INSTALL_PATH="~/.codex"
+      CONFIG_FILE="codex.config.sample.toml"
+      RULES_FILE="AGENTS.md"
+      ;;
+    *)
+      fail "지원하지 않는 툴 유형입니다: $current_tool"
+      exit 1
+      ;;
+  esac
+
+  info "vibe-frame-kit ($AGENT_NAME 환경) 설치를 시작합니다."
+  info "저장소 위치: $REPO_ROOT"
+  info "설치 위치: $INSTALL_BASE_DIR"
+  info "프로젝트 Git 원격 저장소 주소: $GIT_URL"
+  mkdir -p "$INSTALL_BASE_DIR"
+
+  SOURCE_COMMON_DIR="$REPO_ROOT/common"
+  if [ ! -d "$SOURCE_COMMON_DIR" ]; then
+    fail "공통 소스 폴더를 찾을 수 없습니다: $SOURCE_COMMON_DIR"
+    exit 1
+  fi
+
+  # 기존 디렉토리 백업
+  DIRECTORIES_TO_COPY=("agents" "skills" "config" "prompts" "templates" "docs" "study")
+  for dir_name in "${DIRECTORIES_TO_COPY[@]}"; do
+    target_dir="$INSTALL_BASE_DIR/$dir_name"
+    if [ -d "$target_dir" ]; then
+      BACKUP_DIR="$INSTALL_BASE_DIR/${dir_name}.backup.$TIMESTAMP"
+      cp -R "$target_dir" "$BACKUP_DIR"
+      success "기존 $dir_name 폴더를 백업했습니다: $BACKUP_DIR"
+    fi
+  done
+
+  # 기존 규칙 파일 백업
+  TARGET_RULES_FILE="$INSTALL_BASE_DIR/$RULES_FILE"
+  if [ -f "$TARGET_RULES_FILE" ]; then
+    BACKUP_RULES_PATH="$INSTALL_BASE_DIR/${RULES_FILE}.backup.$TIMESTAMP"
+    cp "$TARGET_RULES_FILE" "$BACKUP_RULES_PATH"
+    success "기존 $RULES_FILE 파일을 백업했습니다: $BACKUP_RULES_PATH"
+  fi
+
+  # 기존 RULES.md 파일 백업
+  TARGET_RULES_MD_FILE="$INSTALL_BASE_DIR/RULES.md"
+  if [ -f "$TARGET_RULES_MD_FILE" ]; then
+    BACKUP_RULES_MD_PATH="$INSTALL_BASE_DIR/RULES.md.backup.$TIMESTAMP"
+    cp "$TARGET_RULES_MD_FILE" "$BACKUP_RULES_MD_PATH"
+    success "기존 RULES.md 파일을 백업했습니다: $BACKUP_RULES_MD_PATH"
+  fi
+
+  # 복사 및 변수 치환 배포
+  copy_and_replace_directory "$SOURCE_COMMON_DIR" "$INSTALL_BASE_DIR"
+  success "프레임워크 코어 파일 배포 및 템플릿 치환이 완료되었습니다."
+
+  # config.toml 파일 직접 배포
+  if [ "$DEPLOY_CONFIG_DIRECTLY" = true ]; then
+    SAMPLE_CONFIG_FILE="$SOURCE_COMMON_DIR/config/common.config.sample.toml"
+    TARGET_CONFIG_PATH="$PROJ_FOLDER/config.toml"
+    if [ -f "$SAMPLE_CONFIG_FILE" ]; then
+      cp "$SAMPLE_CONFIG_FILE" "$TARGET_CONFIG_PATH"
+      if command -v python3 &>/dev/null; then
+        python3 -c "
 try:
     with open('$TARGET_CONFIG_PATH', 'r', encoding='utf-8', errors='ignore') as f:
         content = f.read()
@@ -347,65 +395,67 @@ except Exception as e:
     import sys
     sys.exit(1)
 "
-    else
-      if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "s/name = \"my-ai-service-project\"/name = \"$PROJ_NAME\"/g" "$TARGET_CONFIG_PATH"
-        sed -i '' "s/{{AGENT_NAME}}/$AGENT_NAME/g" "$TARGET_CONFIG_PATH"
-        sed -i '' "s|{{INSTALL_PATH}}|$INSTALL_PATH|g" "$TARGET_CONFIG_PATH"
-        sed -i '' "s/{{CONFIG_FILE}}/config.toml/g" "$TARGET_CONFIG_PATH"
-        sed -i '' "s/{{RULES_FILE}}/$RULES_FILE/g" "$TARGET_CONFIG_PATH"
-        sed -i '' "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$TARGET_CONFIG_PATH"
-        if [ -z "$GIT_URL" ]; then
-          sed -i '' "s/auto_commit_push = true/auto_commit_push = false/g" "$TARGET_CONFIG_PATH"
-        fi
       else
-        sed -i "s/name = \"my-ai-service-project\"/name = \"$PROJ_NAME\"/g" "$TARGET_CONFIG_PATH"
-        sed -i "s/{{AGENT_NAME}}/$AGENT_NAME/g" "$TARGET_CONFIG_PATH"
-        sed -i "s|{{INSTALL_PATH}}|$INSTALL_PATH|g" "$TARGET_CONFIG_PATH"
-        sed -i "s/{{CONFIG_FILE}}/config.toml/g" "$TARGET_CONFIG_PATH"
-        sed -i "s/{{RULES_FILE}}/$RULES_FILE/g" "$TARGET_CONFIG_PATH"
-        sed -i "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$TARGET_CONFIG_PATH"
-        if [ -z "$GIT_URL" ]; then
-          sed -i "s/auto_commit_push = true/auto_commit_push = false/g" "$TARGET_CONFIG_PATH"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+          sed -i '' "s/name = \"my-ai-service-project\"/name = \"$PROJ_NAME\"/g" "$TARGET_CONFIG_PATH"
+          sed -i '' "s/{{AGENT_NAME}}/$AGENT_NAME/g" "$TARGET_CONFIG_PATH"
+          sed -i '' "s|{{INSTALL_PATH}}|$INSTALL_PATH|g" "$TARGET_CONFIG_PATH"
+          sed -i '' "s/{{CONFIG_FILE}}/config.toml/g" "$TARGET_CONFIG_PATH"
+          sed -i '' "s/{{RULES_FILE}}/$RULES_FILE/g" "$TARGET_CONFIG_PATH"
+          sed -i '' "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$TARGET_CONFIG_PATH"
+          if [ -z "$GIT_URL" ]; then
+            sed -i '' "s/auto_commit_push = true/auto_commit_push = false/g" "$TARGET_CONFIG_PATH"
+          fi
+        else
+          sed -i "s/name = \"my-ai-service-project\"/name = \"$PROJ_NAME\"/g" "$TARGET_CONFIG_PATH"
+          sed -i "s/{{AGENT_NAME}}/$AGENT_NAME/g" "$TARGET_CONFIG_PATH"
+          sed -i "s|{{INSTALL_PATH}}|$INSTALL_PATH|g" "$TARGET_CONFIG_PATH"
+          sed -i "s/{{CONFIG_FILE}}/config.toml/g" "$TARGET_CONFIG_PATH"
+          sed -i "s/{{RULES_FILE}}/$RULES_FILE/g" "$TARGET_CONFIG_PATH"
+          sed -i "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$TARGET_CONFIG_PATH"
+          if [ -z "$GIT_URL" ]; then
+            sed -i "s/auto_commit_push = true/auto_commit_push = false/g" "$TARGET_CONFIG_PATH"
+          fi
         fi
       fi
+      success "프로젝트 폴더 내에 config.toml을 자동 생성했습니다: $TARGET_CONFIG_PATH"
+    else
+      fail "샘플 설정 파일이 존재하지 않아 config.toml을 자동 생성하지 못했습니다."
     fi
-    success "프로젝트 폴더 내에 config.toml을 자동 생성했습니다: $TARGET_CONFIG_PATH"
-  else
-    fail "샘플 설정 파일이 존재하지 않아 config.toml을 자동 생성하지 못했습니다."
   fi
-fi
 
-printf '\n'
-success "vibe-frame-kit ($AGENT_NAME 버전) 설치가 완료되었습니다."
-printf '\033[32m설치된 항목:\033[0m\n'
-printf -- '- %s/%s\n' "$INSTALL_PATH" "$RULES_FILE"
-printf -- '- %s/agents/\n' "$INSTALL_PATH"
-printf -- '- %s/skills/\n' "$INSTALL_PATH"
-printf -- '- %s/config/\n' "$INSTALL_PATH"
-printf -- '- %s/prompts/\n' "$INSTALL_PATH"
-printf -- '- %s/templates/\n' "$INSTALL_PATH"
-printf -- '- %s/docs/\n' "$INSTALL_PATH"
-printf -- '- %s/study/\n' "$INSTALL_PATH"
-printf '\n'
+  printf '\n'
+  success "vibe-frame-kit ($AGENT_NAME 버전) 설치가 완료되었습니다."
+  printf '\033[32m설치된 항목:\033[0m\n'
+  printf -- '- %s/%s\n' "$INSTALL_PATH" "$RULES_FILE"
+  printf -- '- %s/RULES.md\n' "$INSTALL_PATH"
+  printf -- '- %s/agents/\n' "$INSTALL_PATH"
+  printf -- '- %s/skills/\n' "$INSTALL_PATH"
+  printf -- '- %s/config/\n' "$INSTALL_PATH"
+  printf -- '- %s/prompts/\n' "$INSTALL_PATH"
+  printf -- '- %s/templates/\n' "$INSTALL_PATH"
+  printf -- '- %s/docs/\n' "$INSTALL_PATH"
+  printf -- '- %s/study/\n' "$INSTALL_PATH"
+  printf '\n'
 
-printf '\033[33m=============================================\033[0m\n'
-printf '\033[33m [Action Required: Setup Configuration]\033[0m\n'
-printf '\033[33m=============================================\033[0m\n'
-if [ "$DEPLOY_CONFIG_DIRECTLY" = true ]; then
-  printf ' 1. Configuration file successfully created:\n'
-  printf '    %s/config.toml\n' "$PROJ_FOLDER"
-  printf ' 2. Status:\n'
-  printf '    No further action needed! The Agent will now read settings from this file.\n'
-else
-  printf ' 1. Sample TOML file location:\n'
-  printf '    %s/config/%s\n' "$INSTALL_PATH" "$CONFIG_FILE"
-  printf ' 2. How to activate:\n'
-  printf '    - Copy the sample file above to your '\''Project Root Folder'\''\n'
-  printf '    - Rename the file to '\''config.toml'\'' to apply settings to the Agent.\n'
-  printf '      (e.g., %s -> config.toml)\n' "$CONFIG_FILE"
-fi
-printf ' 3. Git remote URL injected:\n'
-printf '    %s\n' "$GIT_URL"
-printf '\033[33m=============================================\033[0m\n'
-printf '\n'
+  printf '\033[33m=============================================\033[0m\n'
+  printf '\033[33m [Action Required: Setup Configuration]\033[0m\n'
+  printf '\033[33m=============================================\033[0m\n'
+  if [ "$DEPLOY_CONFIG_DIRECTLY" = true ]; then
+    printf ' 1. Configuration file successfully created:\n'
+    printf '    %s/config.toml\n' "$PROJ_FOLDER"
+    printf ' 2. Status:\n'
+    printf '    No further action needed! The Agent will now read settings from this file.\n'
+  else
+    printf ' 1. Sample TOML file location:\n'
+    printf '    %s/config/%s\n' "$INSTALL_PATH" "$CONFIG_FILE"
+    printf ' 2. How to activate:\n'
+    printf '    - Copy the sample file above to your '\''Project Root Folder'\''\n'
+    printf '    - Rename the file to '\''config.toml'\'' to apply settings to the Agent.\n'
+    printf '      (e.g., %s -> config.toml)\n' "$CONFIG_FILE"
+  fi
+  printf ' 3. Git remote URL injected:\n'
+  printf '    %s\n' "$GIT_URL"
+  printf '\033[33m=============================================\033[0m\n'
+  printf '\n'
+done

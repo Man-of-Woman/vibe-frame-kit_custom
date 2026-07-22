@@ -1,7 +1,6 @@
 param(
     [Parameter(Mandatory=$false)]
-    [ValidateSet("gemini", "claude", "codex")]
-    [string]$Tool,
+    [string[]]$Tool,
 
     [Parameter(Mandatory=$false)]
     [string]$GitUrl,
@@ -187,57 +186,75 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # ==========================================================
 
 try {
-    # Interactive input if tool not specified
-    if ([string]::IsNullOrEmpty($Tool)) {
-        Write-Host "=============================================" -ForegroundColor Yellow
-        Write-Host " Starting unified vibe-frame-kit installation." -ForegroundColor Yellow
-        Write-Host "=============================================" -ForegroundColor Yellow
-        Write-Host "Select AI development tool environment to install:" -ForegroundColor Yellow
-        Write-Host "1) Gemini (Antigravity)" -ForegroundColor Cyan
-        Write-Host "2) Claude (Desktop / Code CLI)" -ForegroundColor Cyan
-        Write-Host "3) Codex (Cursor, etc.)" -ForegroundColor Cyan
-        $Choice = Read-Host "Select (1-3)"
-        switch ($Choice) {
-            "1" { $Tool = "gemini" }
-            "2" { $Tool = "claude" }
-            "3" { $Tool = "codex" }
-            default {
-                Write-Host "[ERROR] Invalid choice. Aborting installation." -ForegroundColor Red
-                exit 1
+    # Interactive checklist for tool selection if not specified
+    $SelectedTools = @()
+    if ($null -eq $Tool -or $Tool.Count -eq 0) {
+        $Options = @(
+            @{ Name = "Gemini (Antigravity)"; Value = "gemini"; Selected = $false },
+            @{ Name = "Claude (Desktop / Code CLI)"; Value = "claude"; Selected = $false },
+            @{ Name = "Codex (Cursor, etc.)"; Value = "codex"; Selected = $false }
+        )
+
+        while ($true) {
+            Clear-Host
+            Write-Host "=============================================" -ForegroundColor Yellow
+            Write-Host " Starting unified vibe-frame-kit installation." -ForegroundColor Yellow
+            Write-Host "=============================================" -ForegroundColor Yellow
+            Write-Host "Select AI development tool environment(s) to install:" -ForegroundColor Yellow
+            Write-Host " (Toggle items by typing numbers, e.g. 1 or 1,2. Press Enter to confirm)" -ForegroundColor Gray
+            Write-Host ""
+            
+            for ($i = 0; $i -lt $Options.Count; $i++) {
+                $Check = if ($Options[$i].Selected) { "[X]" } else { "[ ]" }
+                $Color = if ($Options[$i].Selected) { "Green" } else { "Cyan" }
+                Write-Host "  $Check $($i+1)) $($Options[$i].Name)" -ForegroundColor $Color
             }
+            Write-Host ""
+            
+            $Input = Read-Host "Select (1-3, or press Enter to confirm)"
+            if ([string]::IsNullOrWhiteSpace($Input)) {
+                $SelectedTools = $Options | Where-Object { $_.Selected } | ForEach-Object { $_.Value }
+                if ($SelectedTools.Count -gt 0) {
+                    break
+                } else {
+                    Write-Host "[ERROR] You must select at least one tool." -ForegroundColor Red
+                    Start-Sleep -Seconds 1
+                    continue
+                }
+            }
+
+            $Indices = $Input -split ',' | ForEach-Object { $_.Trim() }
+            foreach ($IdxStr in $Indices) {
+                if ($IdxStr -match '^[1-3]$') {
+                    $Idx = [int]$IdxStr - 1
+                    $Options[$Idx].Selected = -not $Options[$Idx].Selected
+                } else {
+                    Write-Host "[ERROR] Invalid input: $IdxStr. Use numbers 1-3." -ForegroundColor Red
+                    Start-Sleep -Seconds 1
+                }
+            }
+        }
+    } else {
+        # Split any comma separated strings in the array and clean them
+        $ParsedTools = @()
+        foreach ($T in $Tool) {
+            if (-not [string]::IsNullOrWhiteSpace($T)) {
+                $ParsedTools += $T -split ',' | ForEach-Object { $_.Trim().ToLower() }
+            }
+        }
+        
+        # Validate tools
+        foreach ($T in $ParsedTools) {
+            if ($T -notin @("gemini", "claude", "codex")) {
+                throw "Invalid tool: $T. Valid tools are: gemini, claude, codex"
+            }
+            $SelectedTools += $T
         }
     }
 
     $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
     $RepoRoot = Resolve-Path (Join-Path $ScriptDir "..")
     $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-
-    # Define tool configurations
-    $Mappings = @{}
-    $InstallBaseDir = ""
-    switch ($Tool) {
-        "gemini" {
-            $InstallBaseDir = Join-Path $HOME ".gemini\config"
-            $Mappings["{{AGENT_NAME}}"] = "Gemini"
-            $Mappings["{{INSTALL_PATH}}"] = "~/.gemini/config"
-            $Mappings["{{CONFIG_FILE}}"] = "gemini.config.sample.toml"
-            $Mappings["{{RULES_FILE}}"] = "AGENTS.md"
-        }
-        "claude" {
-            $InstallBaseDir = Join-Path $HOME ".claude"
-            $Mappings["{{AGENT_NAME}}"] = "Claude"
-            $Mappings["{{INSTALL_PATH}}"] = "~/.claude"
-            $Mappings["{{CONFIG_FILE}}"] = "claude.config.sample.toml"
-            $Mappings["{{RULES_FILE}}"] = "CLAUDE.md"
-        }
-        "codex" {
-            $InstallBaseDir = Join-Path $HOME ".codex"
-            $Mappings["{{AGENT_NAME}}"] = "Codex"
-            $Mappings["{{INSTALL_PATH}}"] = "~/.codex"
-            $Mappings["{{CONFIG_FILE}}"] = "codex.config.sample.toml"
-            $Mappings["{{RULES_FILE}}"] = "AGENTS.md"
-        }
-    }
 
     if ([string]::IsNullOrWhiteSpace($GitUrl)) {
         $GitUrl = Read-Host "Enter your project Git remote URL (Optional, press Enter to skip)"
@@ -251,8 +268,6 @@ try {
     elseif (-not [string]::IsNullOrWhiteSpace($GitUrl) -and -not (Test-GitUrlFormat $GitUrl)) {
         throw "Invalid Git remote URL format. Supported formats: https://..., git@..., ssh://..."
     }
-
-    $Mappings["{{GIT_REMOTE_URL}}"] = $GitUrl
 
     # Project folder setup logic
     $SpecifyFolder = ""
@@ -285,110 +300,154 @@ try {
         $DeployConfigDirectly = $true
     }
 
-    Write-Info "Installing vibe-frame-kit for $($Mappings['{{AGENT_NAME}}'])."
-    Write-Info "Repository location: $RepoRoot"
-    Write-Info "Target path: $InstallBaseDir"
-    Write-Info "Project Git remote URL: $GitUrl"
-
-    if (-not (Test-Path $InstallBaseDir)) {
-        New-Item -ItemType Directory -Path $InstallBaseDir -Force | Out-Null
-        Write-Success "Created target directory."
-    }
-
-    $SourceCommonDir = Join-Path $RepoRoot "common"
-    if (-not (Test-Path $SourceCommonDir)) {
-        throw "Common source folder not found: $SourceCommonDir"
-    }
-
-    # Backup existing directories
-    $DirectoriesToCopy = @("agents", "skills", "config", "prompts", "templates", "docs", "study")
-    foreach ($DirName in $DirectoriesToCopy) {
-        $TargetDir = Join-Path $InstallBaseDir $DirName
-        if (Test-Path $TargetDir) {
-            $BackupDir = Join-Path $InstallBaseDir "$DirName.backup.$Timestamp"
-            Safe-BackupDirectory -SourceDir $TargetDir -BackupDir $BackupDir
-            Write-Success "Backed up existing $DirName to $BackupDir"
-        }
-    }
-
-    # Backup existing rules file
-    $TargetRulesFile = Join-Path $InstallBaseDir $Mappings["{{RULES_FILE}}"]
-    if (Test-Path $TargetRulesFile) {
-        $BackupRulesPath = Join-Path $InstallBaseDir "$($Mappings['{{RULES_FILE}}']).backup.$Timestamp"
-        Copy-Item -Path $TargetRulesFile -Destination $BackupRulesPath -Force
-        Write-Success "Backed up existing rules file to $BackupRulesPath"
-    }
-
-    # Backup existing RULES.md file
-    $TargetRulesMdFile = Join-Path $InstallBaseDir "RULES.md"
-    if (Test-Path $TargetRulesMdFile) {
-        $BackupRulesMdPath = Join-Path $InstallBaseDir "RULES.md.backup.$Timestamp"
-        Copy-Item -Path $TargetRulesMdFile -Destination $BackupRulesMdPath -Force
-        Write-Success "Backed up existing RULES.md file to $BackupRulesMdPath"
-    }
-
-    # Consolidate and copy
-    Safe-CopyAndReplaceDirectory -SourceDir $SourceCommonDir -TargetDir $InstallBaseDir -Mappings $Mappings
+    # Deploy ignore files at repository root once
     Deploy-IgnoreFiles -RepoRoot $RepoRoot
-    Write-Success "Framework files deployed and template variables substituted."
 
-    # Generate config.toml in project folder if requested
-    if ($DeployConfigDirectly) {
-        $SampleConfigFile = Join-Path $SourceCommonDir "config\common.config.sample.toml"
-        $TargetConfigPath = Join-Path $ProjFolder "config.toml"
-        if (Test-Path $SampleConfigFile) {
-            $ConfigContent = Get-Content -Path $SampleConfigFile -Raw -Encoding UTF8
-            
-            # Substitutions
-            $ConfigContent = $ConfigContent.Replace('name = "my-ai-service-project"', "name = `"$ProjName`"")
-            $ConfigContent = $ConfigContent.Replace("{{AGENT_NAME}}", $Mappings["{{AGENT_NAME}}"])
-            $ConfigContent = $ConfigContent.Replace("{{INSTALL_PATH}}", $Mappings["{{INSTALL_PATH}}"])
-            $ConfigContent = $ConfigContent.Replace("{{CONFIG_FILE}}", "config.toml")
-            $ConfigContent = $ConfigContent.Replace("{{RULES_FILE}}", $Mappings["{{RULES_FILE}}"])
-            $ConfigContent = $ConfigContent.Replace("{{GIT_REMOTE_URL}}", $GitUrl)
-            if ([string]::IsNullOrWhiteSpace($GitUrl)) {
-                $ConfigContent = $ConfigContent.Replace("auto_commit_push = true", "auto_commit_push = false")
+    foreach ($CurrentTool in $SelectedTools) {
+        # Define tool configurations
+        $Mappings = @{}
+        $InstallBaseDir = ""
+        switch ($CurrentTool) {
+            "gemini" {
+                $InstallBaseDir = Join-Path $HOME ".gemini\config"
+                $Mappings["{{AGENT_NAME}}"] = "Gemini"
+                $Mappings["{{INSTALL_PATH}}"] = "~/.gemini/config"
+                $Mappings["{{CONFIG_FILE}}"] = "gemini.config.sample.toml"
+                $Mappings["{{RULES_FILE}}"] = "AGENTS.md"
             }
-
-            Set-Content -Path $TargetConfigPath -Value $ConfigContent -Encoding UTF8
-            Write-Success "Automatically created config.toml in project folder: $TargetConfigPath"
-        } else {
-            Write-Fail "Sample config file not found, failed to auto-create config.toml."
+            "claude" {
+                $InstallBaseDir = Join-Path $HOME ".claude"
+                $Mappings["{{AGENT_NAME}}"] = "Claude"
+                $Mappings["{{INSTALL_PATH}}"] = "~/.claude"
+                $Mappings["{{CONFIG_FILE}}"] = "claude.config.sample.toml"
+                $Mappings["{{RULES_FILE}}"] = "CLAUDE.md"
+            }
+            "codex" {
+                $InstallBaseDir = Join-Path $HOME ".codex"
+                $Mappings["{{AGENT_NAME}}"] = "Codex"
+                $Mappings["{{INSTALL_PATH}}"] = "~/.codex"
+                $Mappings["{{CONFIG_FILE}}"] = "codex.config.sample.toml"
+                $Mappings["{{RULES_FILE}}"] = "AGENTS.md"
+            }
         }
-    }
 
-    Write-Host ""
-    Write-Success "vibe-frame-kit ($($Mappings['{{AGENT_NAME}}']) version) installation complete."
-    Write-Host "Installed items:" -ForegroundColor Green
-    Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/$($Mappings['{{RULES_FILE}}'])"
-    Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/agents/"
-    Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/skills/"
-    Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/config/"
-    Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/prompts/"
-    Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/templates/"
-    Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/docs/"
-    Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/study/"
+        $Mappings["{{GIT_REMOTE_URL}}"] = $GitUrl
 
-    Write-Host ""
-    Write-Host "=============================================" -ForegroundColor Yellow
-    Write-Host " [Action Required: Setup Configuration]" -ForegroundColor Yellow
-    Write-Host "=============================================" -ForegroundColor Yellow
-    if ($DeployConfigDirectly) {
-        Write-Host " 1. Configuration file successfully created:" -ForegroundColor Cyan
-        Write-Host "    $ProjFolder\config.toml" -ForegroundColor White
-        Write-Host " 2. Status:" -ForegroundColor Cyan
-        Write-Host "    No further action needed! The Agent will now read settings from this file." -ForegroundColor White
-    } else {
-        Write-Host " 1. Sample TOML file location:" -ForegroundColor Cyan
-        Write-Host "    $($Mappings['{{INSTALL_PATH}}'])/config/$($Mappings['{{CONFIG_FILE}}'])" -ForegroundColor White
-        Write-Host " 2. How to activate:" -ForegroundColor Cyan
-        Write-Host "    - Copy the sample file above to your 'Project Root Folder'." -ForegroundColor White
-        Write-Host "    - Rename the file to 'config.toml' to apply settings to the Agent." -ForegroundColor White
-        Write-Host "      (e.g., $($Mappings['{{CONFIG_FILE}}']) -> config.toml)" -ForegroundColor Gray
+        Write-Info "Installing vibe-frame-kit for $($Mappings['{{AGENT_NAME}}'])."
+        Write-Info "Repository location: $RepoRoot"
+        Write-Info "Target path: $InstallBaseDir"
+        Write-Info "Project Git remote URL: $GitUrl"
+
+        if (-not (Test-Path $InstallBaseDir)) {
+            New-Item -ItemType Directory -Path $InstallBaseDir -Force | Out-Null
+            Write-Success "Created target directory."
+        }
+
+        $SourceCommonDir = Join-Path $RepoRoot "common"
+        if (-not (Test-Path $SourceCommonDir)) {
+            throw "Common source folder not found: $SourceCommonDir"
+        }
+
+        # Backup existing directories
+        $DirectoriesToCopy = @("agents", "skills", "config", "prompts", "templates", "docs", "study")
+        foreach ($DirName in $DirectoriesToCopy) {
+            $TargetDir = Join-Path $InstallBaseDir $DirName
+            if (Test-Path $TargetDir) {
+                $BackupDir = Join-Path $InstallBaseDir "$DirName.backup.$Timestamp"
+                Safe-BackupDirectory -SourceDir $TargetDir -BackupDir $BackupDir
+                Write-Success "Backed up existing $DirName to $BackupDir"
+            }
+        }
+
+        # Backup existing rules file
+        $TargetRulesFile = Join-Path $InstallBaseDir $Mappings["{{RULES_FILE}}"]
+        if (Test-Path $TargetRulesFile) {
+            try {
+                $BackupRulesPath = Join-Path $InstallBaseDir "$($Mappings['{{RULES_FILE}}']).backup.$Timestamp"
+                Copy-Item -Path $TargetRulesFile -Destination $BackupRulesPath -Force -ErrorAction Stop
+                Write-Success "Backed up existing rules file to $BackupRulesPath"
+            }
+            catch {
+                Write-Host "[WARNING] Failed to backup rules file: $($_.Exception.Message)" -ForegroundColor Yellow
+            }
+        }
+
+        # Backup existing RULES.md file
+        $TargetRulesMdFile = Join-Path $InstallBaseDir "RULES.md"
+        if (Test-Path $TargetRulesMdFile) {
+            try {
+                $BackupRulesMdPath = Join-Path $InstallBaseDir "RULES.md.backup.$Timestamp"
+                Copy-Item -Path $TargetRulesMdFile -Destination $BackupRulesMdPath -Force -ErrorAction Stop
+                Write-Success "Backed up existing RULES.md file to $BackupRulesMdPath"
+            }
+            catch {
+                Write-Host "[WARNING] Failed to backup RULES.md file: $($_.Exception.Message)" -ForegroundColor Yellow
+            }
+        }
+
+        # Consolidate and copy
+        Safe-CopyAndReplaceDirectory -SourceDir $SourceCommonDir -TargetDir $InstallBaseDir -Mappings $Mappings
+        Write-Success "Framework files deployed and template variables substituted."
+
+        # Generate config.toml in project folder if requested
+        if ($DeployConfigDirectly) {
+            $SampleConfigFile = Join-Path $SourceCommonDir "config\common.config.sample.toml"
+            $TargetConfigPath = Join-Path $ProjFolder "config.toml"
+            if (Test-Path $SampleConfigFile) {
+                $ConfigContent = Get-Content -Path $SampleConfigFile -Raw -Encoding UTF8
+                
+                # Substitutions
+                $ConfigContent = $ConfigContent.Replace('name = "my-ai-service-project"', "name = `"$ProjName`"")
+                $ConfigContent = $ConfigContent.Replace("{{AGENT_NAME}}", $Mappings["{{AGENT_NAME}}"])
+                $ConfigContent = $ConfigContent.Replace("{{INSTALL_PATH}}", $Mappings["{{INSTALL_PATH}}"])
+                $ConfigContent = $ConfigContent.Replace("{{CONFIG_FILE}}", "config.toml")
+                $ConfigContent = $ConfigContent.Replace("{{RULES_FILE}}", $Mappings["{{RULES_FILE}}"])
+                $ConfigContent = $ConfigContent.Replace("{{GIT_REMOTE_URL}}", $GitUrl)
+                if ([string]::IsNullOrWhiteSpace($GitUrl)) {
+                    $ConfigContent = $ConfigContent.Replace("auto_commit_push = true", "auto_commit_push = false")
+                }
+
+                Set-Content -Path $TargetConfigPath -Value $ConfigContent -Encoding UTF8
+                Write-Success "Automatically created config.toml in project folder: $TargetConfigPath"
+            } else {
+                Write-Fail "Sample config file not found, failed to auto-create config.toml."
+            }
+        }
+
+        Write-Host ""
+        Write-Success "vibe-frame-kit ($($Mappings['{{AGENT_NAME}}']) version) installation complete."
+        Write-Host "Installed items:" -ForegroundColor Green
+        Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/$($Mappings['{{RULES_FILE}}'])"
+        Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/RULES.md"
+        Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/agents/"
+        Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/skills/"
+        Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/config/"
+        Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/prompts/"
+        Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/templates/"
+        Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/docs/"
+        Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/study/"
+
+        Write-Host ""
+        Write-Host "=============================================" -ForegroundColor Yellow
+        Write-Host " [Action Required: Setup Configuration]" -ForegroundColor Yellow
+        Write-Host "=============================================" -ForegroundColor Yellow
+        if ($DeployConfigDirectly) {
+            Write-Host " 1. Configuration file successfully created:" -ForegroundColor Cyan
+            Write-Host "    $ProjFolder\config.toml" -ForegroundColor White
+            Write-Host " 2. Status:" -ForegroundColor Cyan
+            Write-Host "    No further action needed! The Agent will now read settings from this file." -ForegroundColor White
+        } else {
+            Write-Host " 1. Sample TOML file location:" -ForegroundColor Cyan
+            Write-Host "    $($Mappings['{{INSTALL_PATH}}'])/config/$($Mappings['{{CONFIG_FILE}}'])" -ForegroundColor White
+            Write-Host " 2. How to activate:" -ForegroundColor Cyan
+            Write-Host "    - Copy the sample file above to your 'Project Root Folder'." -ForegroundColor White
+            Write-Host "    - Rename the file to 'config.toml' to apply settings to the Agent." -ForegroundColor White
+            Write-Host "      (e.g., $($Mappings['{{CONFIG_FILE}}']) -> config.toml)" -ForegroundColor Gray
+        }
+        Write-Host " 3. Git remote URL injected:" -ForegroundColor Cyan
+        Write-Host "    $GitUrl" -ForegroundColor White
+        Write-Host "=============================================" -ForegroundColor Yellow
     }
-    Write-Host " 3. Git remote URL injected:" -ForegroundColor Cyan
-    Write-Host "    $GitUrl" -ForegroundColor White
-    Write-Host "=============================================" -ForegroundColor Yellow
 }
 catch {
     Write-Host ""
