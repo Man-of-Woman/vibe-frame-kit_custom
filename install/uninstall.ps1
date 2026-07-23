@@ -22,6 +22,64 @@ function Write-Fail {
     Write-Host "[ERROR] $Message" -ForegroundColor Red
 }
 
+function Show-MultiSelectMenu {
+    param(
+        [string]$Title,
+        [System.Collections.Generic.List[hashtable]]$Options
+    )
+    $SelectedIndex = 0
+    $Done = $false
+
+    $OriginalCursorVisible = $true
+    try {
+        $OriginalCursorVisible = [Console]::CursorVisible
+        [Console]::CursorVisible = $false
+    } catch {}
+
+    while (-not $Done) {
+        Clear-Host
+        Write-Host "=============================================" -ForegroundColor Yellow
+        Write-Host " $Title" -ForegroundColor Yellow
+        Write-Host "=============================================" -ForegroundColor Yellow
+        Write-Host "Select options using Up/Down arrows and Spacebar." -ForegroundColor Yellow
+        Write-Host "Press Enter to confirm selection." -ForegroundColor Gray
+        Write-Host ""
+
+        for ($i = 0; $i -lt $Options.Count; $i++) {
+            $Check = if ($Options[$i].Selected) { "[X]" } else { "[ ]" }
+            $Indicator = if ($i -eq $SelectedIndex) { ">" } else { " " }
+            
+            $ForegroundColor = "Cyan"
+            if ($Options[$i].Selected) { $ForegroundColor = "Green" }
+            if ($i -eq $SelectedIndex) { $ForegroundColor = "White" }
+
+            Write-Host "  $Indicator $Check $($Options[$i].Name)" -ForegroundColor $ForegroundColor
+        }
+        Write-Host ""
+
+        $KeyInfo = [Console]::ReadKey($true)
+        switch ($KeyInfo.Key) {
+            "UpArrow" {
+                $SelectedIndex = ($SelectedIndex - 1 + $Options.Count) % $Options.Count
+            }
+            "DownArrow" {
+                $SelectedIndex = ($SelectedIndex + 1) % $Options.Count
+            }
+            "Spacebar" {
+                $Options[$SelectedIndex].Selected = -not $Options[$SelectedIndex].Selected
+            }
+            "Enter" {
+                $Done = $true
+            }
+        }
+    }
+
+    try {
+        [Console]::CursorVisible = $OriginalCursorVisible
+    } catch {}
+}
+
+
 # ==========================================================
 # 2. Global settings
 # ==========================================================
@@ -62,53 +120,24 @@ try {
         }
         else {
             # Multiple tools are installed, show checklist
-            $Options = @()
+            $Options = [System.Collections.Generic.List[hashtable]]::new()
             foreach ($T in $InstalledTools) {
                 $Name = switch ($T) {
                     "gemini" { "Gemini (Antigravity)" }
                     "claude" { "Claude (Desktop / Code CLI)" }
                     "codex" { "Codex (Cursor, etc.)" }
                 }
-                $Options += @{ Name = $Name; Value = $T; Selected = $false }
+                $Options.Add(@{ Name = $Name; Value = $T; Selected = $false })
             }
 
             while ($true) {
-                Clear-Host
-                Write-Host "=============================================" -ForegroundColor Yellow
-                Write-Host " Starting unified vibe-frame-kit uninstallation." -ForegroundColor Yellow
-                Write-Host "=============================================" -ForegroundColor Yellow
-                Write-Host "Select AI development tool environment(s) to uninstall:" -ForegroundColor Yellow
-                Write-Host " (Toggle items by typing numbers, e.g. 1 or 1,2. Press Enter to confirm)" -ForegroundColor Gray
-                Write-Host ""
-                
-                for ($i = 0; $i -lt $Options.Count; $i++) {
-                    $Check = if ($Options[$i].Selected) { "[X]" } else { "[ ]" }
-                    $Color = if ($Options[$i].Selected) { "Green" } else { "Cyan" }
-                    Write-Host "  $Check $($i+1)) $($Options[$i].Name)" -ForegroundColor $Color
-                }
-                Write-Host ""
-                
-                $Input = Read-Host "Select (1-$($Options.Count), or press Enter to confirm)"
-                if ([string]::IsNullOrWhiteSpace($Input)) {
-                    $SelectedTools = $Options | Where-Object { $_.Selected } | ForEach-Object { $_.Value }
-                    if ($SelectedTools.Count -gt 0) {
-                        break
-                    } else {
-                        Write-Host "[ERROR] You must select at least one tool." -ForegroundColor Red
-                        Start-Sleep -Seconds 1
-                        continue
-                    }
-                }
-
-                $Indices = $Input -split ',' | ForEach-Object { $_.Trim() }
-                foreach ($IdxStr in $Indices) {
-                    if ($IdxStr -match "^[1-$($Options.Count)]$") {
-                        $Idx = [int]$IdxStr - 1
-                        $Options[$Idx].Selected = -not $Options[$Idx].Selected
-                    } else {
-                        Write-Host "[ERROR] Invalid input: $IdxStr. Use numbers 1-$($Options.Count)." -ForegroundColor Red
-                        Start-Sleep -Seconds 1
-                    }
+                Show-MultiSelectMenu -Title "Select AI development tool environment(s) to uninstall" -Options $Options
+                $SelectedTools = $Options | Where-Object { $_.Selected } | ForEach-Object { $_.Value }
+                if ($SelectedTools.Count -gt 0) {
+                    break
+                } else {
+                    Write-Host "[ERROR] You must select at least one tool." -ForegroundColor Red
+                    Start-Sleep -Seconds 1
                 }
             }
         }

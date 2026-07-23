@@ -173,6 +173,64 @@ function Deploy-IgnoreFiles {
     }
 }
 
+function Show-MultiSelectMenu {
+    param(
+        [string]$Title,
+        [System.Collections.Generic.List[hashtable]]$Options
+    )
+    $SelectedIndex = 0
+    $Done = $false
+
+    $OriginalCursorVisible = $true
+    try {
+        $OriginalCursorVisible = [Console]::CursorVisible
+        [Console]::CursorVisible = $false
+    } catch {}
+
+    while (-not $Done) {
+        Clear-Host
+        Write-Host "=============================================" -ForegroundColor Yellow
+        Write-Host " $Title" -ForegroundColor Yellow
+        Write-Host "=============================================" -ForegroundColor Yellow
+        Write-Host "Select options using Up/Down arrows and Spacebar." -ForegroundColor Yellow
+        Write-Host "Press Enter to confirm selection." -ForegroundColor Gray
+        Write-Host ""
+
+        for ($i = 0; $i -lt $Options.Count; $i++) {
+            $Check = if ($Options[$i].Selected) { "[X]" } else { "[ ]" }
+            $Indicator = if ($i -eq $SelectedIndex) { ">" } else { " " }
+            
+            $ForegroundColor = "Cyan"
+            if ($Options[$i].Selected) { $ForegroundColor = "Green" }
+            if ($i -eq $SelectedIndex) { $ForegroundColor = "White" }
+
+            Write-Host "  $Indicator $Check $($Options[$i].Name)" -ForegroundColor $ForegroundColor
+        }
+        Write-Host ""
+
+        $KeyInfo = [Console]::ReadKey($true)
+        switch ($KeyInfo.Key) {
+            "UpArrow" {
+                $SelectedIndex = ($SelectedIndex - 1 + $Options.Count) % $Options.Count
+            }
+            "DownArrow" {
+                $SelectedIndex = ($SelectedIndex + 1) % $Options.Count
+            }
+            "Spacebar" {
+                $Options[$SelectedIndex].Selected = -not $Options[$SelectedIndex].Selected
+            }
+            "Enter" {
+                $Done = $true
+            }
+        }
+    }
+
+    try {
+        [Console]::CursorVisible = $OriginalCursorVisible
+    } catch {}
+}
+
+
 # ==========================================================
 # 2. Global settings
 # ==========================================================
@@ -189,49 +247,19 @@ try {
     # Interactive checklist for tool selection if not specified
     $SelectedTools = @()
     if ($null -eq $Tool -or $Tool.Count -eq 0) {
-        $Options = @(
-            @{ Name = "Gemini (Antigravity)"; Value = "gemini"; Selected = $false },
-            @{ Name = "Claude (Desktop / Code CLI)"; Value = "claude"; Selected = $false },
-            @{ Name = "Codex (Cursor, etc.)"; Value = "codex"; Selected = $false }
-        )
+        $Options = [System.Collections.Generic.List[hashtable]]::new()
+        $Options.Add(@{ Name = "Gemini (Antigravity)"; Value = "gemini"; Selected = $false })
+        $Options.Add(@{ Name = "Claude (Desktop / Code CLI)"; Value = "claude"; Selected = $false })
+        $Options.Add(@{ Name = "Codex (Cursor, etc.)"; Value = "codex"; Selected = $false })
 
         while ($true) {
-            Clear-Host
-            Write-Host "=============================================" -ForegroundColor Yellow
-            Write-Host " Starting unified vibe-frame-kit installation." -ForegroundColor Yellow
-            Write-Host "=============================================" -ForegroundColor Yellow
-            Write-Host "Select AI development tool environment(s) to install:" -ForegroundColor Yellow
-            Write-Host " (Toggle items by typing numbers, e.g. 1 or 1,2. Press Enter to confirm)" -ForegroundColor Gray
-            Write-Host ""
-            
-            for ($i = 0; $i -lt $Options.Count; $i++) {
-                $Check = if ($Options[$i].Selected) { "[X]" } else { "[ ]" }
-                $Color = if ($Options[$i].Selected) { "Green" } else { "Cyan" }
-                Write-Host "  $Check $($i+1)) $($Options[$i].Name)" -ForegroundColor $Color
-            }
-            Write-Host ""
-            
-            $Input = Read-Host "Select (1-3, or press Enter to confirm)"
-            if ([string]::IsNullOrWhiteSpace($Input)) {
-                $SelectedTools = $Options | Where-Object { $_.Selected } | ForEach-Object { $_.Value }
-                if ($SelectedTools.Count -gt 0) {
-                    break
-                } else {
-                    Write-Host "[ERROR] You must select at least one tool." -ForegroundColor Red
-                    Start-Sleep -Seconds 1
-                    continue
-                }
-            }
-
-            $Indices = $Input -split ',' | ForEach-Object { $_.Trim() }
-            foreach ($IdxStr in $Indices) {
-                if ($IdxStr -match '^[1-3]$') {
-                    $Idx = [int]$IdxStr - 1
-                    $Options[$Idx].Selected = -not $Options[$Idx].Selected
-                } else {
-                    Write-Host "[ERROR] Invalid input: $IdxStr. Use numbers 1-3." -ForegroundColor Red
-                    Start-Sleep -Seconds 1
-                }
+            Show-MultiSelectMenu -Title "Select AI development tool environment(s) to install" -Options $Options
+            $SelectedTools = $Options | Where-Object { $_.Selected } | ForEach-Object { $_.Value }
+            if ($SelectedTools.Count -gt 0) {
+                break
+            } else {
+                Write-Host "[ERROR] You must select at least one tool." -ForegroundColor Red
+                Start-Sleep -Seconds 1
             }
         }
     } else {
@@ -298,6 +326,37 @@ try {
             $ProjName = $DefaultProjName
         }
         $DeployConfigDirectly = $true
+        
+        # Git remote URL과 프로젝트 폴더 동기화
+        if (-not [string]::IsNullOrWhiteSpace($GitUrl)) {
+            Write-Info "Synchronizing project folder with Git remote URL: $GitUrl"
+            if (Test-Path (Join-Path $ProjFolder ".git")) {
+                Write-Info "Existing Git repository found. Updating remote URL."
+                git -C $ProjFolder remote set-url origin $GitUrl 2>$null
+                if ($LASTEXITCODE -ne 0) {
+                    git -C $ProjFolder remote add origin $GitUrl 2>$null
+                }
+                Write-Info "Fetching from remote..."
+                git -C $ProjFolder fetch --all
+            } else {
+                $IsEmpty = (Get-ChildItem -Path $ProjFolder -Force | Measure-Object).Count -eq 0
+                if ($IsEmpty) {
+                    Write-Info "Folder is empty. Performing Git clone..."
+                    git clone $GitUrl $ProjFolder
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Fail "Git clone failed. Proceeding with configuration deployment anyway."
+                    } else {
+                        Write-Success "Successfully cloned repository."
+                    }
+                } else {
+                    Write-Info "Folder is not empty. Initializing Git repository locally..."
+                    git -C $ProjFolder init
+                    git -C $ProjFolder remote add origin $GitUrl 2>$null
+                    git -C $ProjFolder fetch origin
+                    Write-Success "Initialized Git and added remote."
+                }
+            }
+        }
     }
 
     # Deploy ignore files at repository root once

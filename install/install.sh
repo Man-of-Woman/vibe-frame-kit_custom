@@ -163,6 +163,79 @@ node_modules/
   fi
 }
 
+show_multi_select_menu() {
+  local title="$1"
+  shift
+  local options=("$@")
+  local selected_index=0
+  local num_options=${#options[@]}
+  local done=false
+
+  # Hide cursor
+  printf '\033[?25l'
+  trap 'printf "\033[?25h"' EXIT
+
+  while [ "$done" = false ]; do
+    clear
+    echo "============================================="
+    echo " vibe-frame-kit 통합 설치를 시작합니다."
+    echo "============================================="
+    echo "설치할 AI 개발 툴 환경을 선택하세요 (복수 선택 가능):"
+    echo " (방향키 위/아래로 이동, 스페이스바로 선택 토글, 엔터로 확정)"
+    echo ""
+
+    for ((i=0; i<num_options; i++)); do
+      IFS=':' read -r name value selected <<< "${options[i]}"
+      check="[ ]"
+      [ "$selected" = "true" ] && check="[X]"
+      
+      indicator=" "
+      [ $i -eq $selected_index ] && indicator=">"
+
+      color="\033[36m" # Cyan
+      [ "$selected" = "true" ] && color="\033[32m" # Green
+      [ $i -eq $selected_index ] && color="\033[37m" # White
+
+      printf "  %s %s \033[1m%b%s\033[0m\n" "$indicator" "$check" "$color" "$name"
+    done
+    printf "\n"
+
+    # read key input
+    read -rsn1 key
+    if [[ "$key" == $'\x1b' ]]; then
+      read -rsn2 -t 0.1 key
+      if [[ "$key" == "[A" ]]; then # Up
+        selected_index=$(( (selected_index - 1 + num_options) % num_options ))
+      elif [[ "$key" == "[B" ]]; then # Down
+        selected_index=$(( (selected_index + 1) % num_options ))
+      fi
+    elif [[ "$key" == "" ]]; then # Enter
+      done=true
+    elif [[ "$key" == " " ]]; then # Spacebar
+      IFS=':' read -r name value selected <<< "${options[selected_index]}"
+      if [ "$selected" = "true" ]; then
+        selected="false"
+      else
+        selected="true"
+      fi
+      options[selected_index]="$name:$value:$selected"
+    fi
+  done
+
+  printf '\033[?25h'
+  trap - EXIT
+
+  local results=""
+  for ((i=0; i<num_options; i++)); do
+    IFS=':' read -r name value selected <<< "${options[i]}"
+    if [ "$selected" = "true" ]; then
+      results="${results:+$results,}$value"
+    fi
+  done
+  echo "$results"
+}
+
+
 TOOL=""
 GIT_URL=""
 
@@ -176,61 +249,21 @@ while getopts "t:g:" opt; do
 done
 
 # 대화식 선택 루프 (체크박스형 복수 선택)
-selected_gemini=false
-selected_claude=false
-selected_codex=false
-
 if [ -z "$TOOL" ]; then
+  options=(
+    "Gemini (Antigravity):gemini:false"
+    "Claude (Desktop / Code CLI):claude:false"
+    "Codex (Cursor 등):codex:false"
+  )
   while true; do
-    clear
-    echo "============================================="
-    echo " vibe-frame-kit 통합 설치를 시작합니다."
-    echo "============================================="
-    echo "설치할 AI 개발 툴 환경을 선택하세요 (복수 선택 가능):"
-    echo " (번호를 입력하여 토글하고, 엔터를 누르면 확정됩니다. 예: 1 또는 1,2)"
-    echo ""
-    
-    check_gemini="[ ]"
-    [ "$selected_gemini" = true ] && check_gemini="[X]"
-    check_claude="[ ]"
-    [ "$selected_claude" = true ] && check_claude="[X]"
-    check_codex="[ ]"
-    [ "$selected_codex" = true ] && check_codex="[X]"
-
-    echo "  $check_gemini 1) Gemini (Antigravity)"
-    echo "  $check_claude 2) Claude (Desktop / Code CLI)"
-    echo "  $check_codex 3) Codex (Cursor 등)"
-    echo ""
-    
-    read -rp "선택 (1-3, 확정하려면 Enter): " Choice
-    Choice=$(echo "$Choice" | tr -d '\r')
-    if [ -z "$Choice" ]; then
-      if [ "$selected_gemini" = false ] && [ "$selected_claude" = false ] && [ "$selected_codex" = false ]; then
-        fail "최소 하나의 툴을 선택해야 합니다."
-        sleep 1
-        continue
-      else
-        break
-      fi
+    TOOL=$(show_multi_select_menu "설치할 AI 개발 툴 환경을 선택하세요 (복수 선택 가능)" "${options[@]}")
+    if [ -n "$TOOL" ]; then
+      break
+    else
+      fail "최소 하나의 툴을 선택해야 합니다."
+      sleep 1
     fi
-
-    # 쉼표로 분할하여 처리
-    IFS=',' read -r -a choices_arr <<< "$Choice"
-    for val in "${choices_arr[@]}"; do
-      val=$(echo "$val" | tr -d '[:space:]')
-      case "$val" in
-        1) [ "$selected_gemini" = true ] && selected_gemini=false || selected_gemini=true ;;
-        2) [ "$selected_claude" = true ] && selected_claude=false || selected_claude=true ;;
-        3) [ "$selected_codex" = true ] && selected_codex=false || selected_codex=true ;;
-        *) fail "잘못된 입력입니다: $val (1-3 입력 가능)" ; sleep 1 ;;
-      esac
-    done
   done
-
-  # 선택된 결과를 TOOL 변수에 결합
-  [ "$selected_gemini" = true ] && TOOL="${TOOL:+$TOOL,}gemini"
-  [ "$selected_claude" = true ] && TOOL="${TOOL:+$TOOL,}claude"
-  [ "$selected_codex" = true ] && TOOL="${TOOL:+$TOOL,}codex"
 fi
 
 IFS=',' read -r -a selected_tools_arr <<< "$TOOL"
@@ -287,6 +320,28 @@ if [ "$SPECIFY_FOLDER" = "Y" ]; then
     PROJ_NAME="$DEFAULT_PROJ_NAME"
   fi
   DEPLOY_CONFIG_DIRECTLY=true
+  
+  # Git remote URL과 프로젝트 폴더 동기화
+  if [ -n "$GIT_URL" ]; then
+    info "프로젝트 폴더와 Git 원격 저장소 동기화 중: $GIT_URL"
+    if [ -d "$PROJ_FOLDER/.git" ]; then
+      info "기존 Git 저장소가 존재합니다. 원격 저장소 URL을 업데이트합니다."
+      git -C "$PROJ_FOLDER" remote set-url origin "$GIT_URL" 2>/dev/null || git -C "$PROJ_FOLDER" remote add origin "$GIT_URL" 2>/dev/null
+      info "원격 저장소로부터 변경 사항을 가져오는 중..."
+      git -C "$PROJ_FOLDER" fetch --all
+    else
+      if [ -z "$(ls -A "$PROJ_FOLDER")" ]; then
+        info "폴더가 비어 있습니다. Git clone을 수행합니다..."
+        git clone "$GIT_URL" "$PROJ_FOLDER" || fail "Git clone에 실패했습니다. 설정 파일 배포는 계속 진행합니다."
+      else
+        info "폴더가 비어 있지 않습니다. 로컬 Git 저장소를 초기화합니다..."
+        git -C "$PROJ_FOLDER" init
+        git -C "$PROJ_FOLDER" remote add origin "$GIT_URL" 2>/dev/null
+        git -C "$PROJ_FOLDER" fetch origin
+        success "Git 저장소를 초기화하고 원격을 추가했습니다."
+      fi
+    fi
+  fi
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -24,6 +24,78 @@ on_error() {
   fail "제거 중 문제가 발생했습니다."
 }
 
+show_multi_select_menu() {
+  local title="$1"
+  shift
+  local options=("$@")
+  local selected_index=0
+  local num_options=${#options[@]}
+  local done=false
+
+  # Hide cursor
+  printf '\033[?25l'
+  trap 'printf "\033[?25h"' EXIT
+
+  while [ "$done" = false ]; do
+    clear
+    echo "============================================="
+    echo " vibe-frame-kit 통합 제거를 시작합니다."
+    echo "============================================="
+    echo "제거할 AI 개발 툴 환경을 선택하세요 (복수 선택 가능):"
+    echo " (방향키 위/아래로 이동, 스페이스바로 선택 토글, 엔터로 확정)"
+    echo ""
+
+    for ((i=0; i<num_options; i++)); do
+      IFS=':' read -r name value selected <<< "${options[i]}"
+      check="[ ]"
+      [ "$selected" = "true" ] && check="[X]"
+      
+      indicator=" "
+      [ $i -eq $selected_index ] && indicator=">"
+
+      color="\033[36m" # Cyan
+      [ "$selected" = "true" ] && color="\033[32m" # Green
+      [ $i -eq $selected_index ] && color="\033[37m" # White
+
+      printf "  %s %s \033[1m%b%s\033[0m\n" "$indicator" "$check" "$color" "$name"
+    done
+    printf "\n"
+
+    # read key input
+    read -rsn1 key
+    if [[ "$key" == $'\x1b' ]]; then
+      read -rsn2 -t 0.1 key
+      if [[ "$key" == "[A" ]]; then # Up
+        selected_index=$(( (selected_index - 1 + num_options) % num_options ))
+      elif [[ "$key" == "[B" ]]; then # Down
+        selected_index=$(( (selected_index + 1) % num_options ))
+      fi
+    elif [[ "$key" == "" ]]; then # Enter
+      done=true
+    elif [[ "$key" == " " ]]; then # Spacebar
+      IFS=':' read -r name value selected <<< "${options[selected_index]}"
+      if [ "$selected" = "true" ]; then
+        selected="false"
+      else
+        selected="true"
+      fi
+      options[selected_index]="$name:$value:$selected"
+    fi
+  done
+
+  printf '\033[?25h'
+  trap - EXIT
+
+  local results=""
+  for ((i=0; i<num_options; i++)); do
+    IFS=':' read -r name value selected <<< "${options[i]}"
+    if [ "$selected" = "true" ]; then
+      results="${results:+$results,}$value"
+    fi
+  done
+  echo "$results"
+}
+
 trap on_error ERR
 
 TOOL=""
@@ -57,91 +129,24 @@ if [ -z "$TOOL" ]; then
       exit 0
     fi
   else
-    # 2개 이상인 경우 체크박스 토글
-    selected_gemini=false
-    selected_claude=false
-    selected_codex=false
-    
-    # 헬퍼 체크
-    has_gemini=false
-    has_claude=false
-    has_codex=false
+    options=()
     for t in "${installed_tools[@]}"; do
-      [ "$t" = "gemini" ] && has_gemini=true
-      [ "$t" = "claude" ] && has_claude=true
-      [ "$t" = "codex" ] && has_codex=true
+      case "$t" in
+        gemini) options+=("Gemini (Antigravity):gemini:false") ;;
+        claude) options+=("Claude (Desktop / Code CLI):claude:false") ;;
+        codex) options+=("Codex (Cursor 등):codex:false") ;;
+      esac
     done
 
     while true; do
-      clear
-      echo "============================================="
-      echo " vibe-frame-kit 통합 제거를 시작합니다."
-      echo "============================================="
-      echo "제거할 AI 개발 툴 환경을 선택하세요 (복수 선택 가능):"
-      echo " (번호를 입력하여 토글하고, 엔터를 누르면 확정됩니다. 예: 1 또는 1,2)"
-      echo ""
-
-      options_count=0
-      gemini_opt_num=""
-      claude_opt_num=""
-      codex_opt_num=""
-
-      if [ "$has_gemini" = true ]; then
-        options_count=$((options_count+1))
-        gemini_opt_num=$options_count
-        check_gemini="[ ]"
-        [ "$selected_gemini" = true ] && check_gemini="[X]"
-        echo "  $check_gemini $gemini_opt_num) Gemini (Antigravity)"
+      TOOL=$(show_multi_select_menu "제거할 AI 개발 툴 환경을 선택하세요 (복수 선택 가능)" "${options[@]}")
+      if [ -n "$TOOL" ]; then
+        break
+      else
+        fail "최소 하나의 제거 대상을 선택해야 합니다."
+        sleep 1
       fi
-
-      if [ "$has_claude" = true ]; then
-        options_count=$((options_count+1))
-        claude_opt_num=$options_count
-        check_claude="[ ]"
-        [ "$selected_claude" = true ] && check_claude="[X]"
-        echo "  $check_claude $claude_opt_num) Claude (Desktop / Code CLI)"
-      fi
-
-      if [ "$has_codex" = true ]; then
-        options_count=$((options_count+1))
-        codex_opt_num=$options_count
-        check_codex="[ ]"
-        [ "$selected_codex" = true ] && check_codex="[X]"
-        echo "  $check_codex $codex_opt_num) Codex (Cursor 등)"
-      fi
-      echo ""
-
-      read -rp "선택 (1-$options_count, 확정하려면 Enter): " Choice
-      Choice=$(echo "$Choice" | tr -d '\r')
-      if [ -z "$Choice" ]; then
-        if [ "$selected_gemini" = false ] && [ "$selected_claude" = false ] && [ "$selected_codex" = false ]; then
-          fail "최소 하나의 제거 대상을 선택해야 합니다."
-          sleep 1
-          continue
-        else
-          break
-        fi
-      fi
-
-      IFS=',' read -r -a choices_arr <<< "$Choice"
-      for val in "${choices_arr[@]}"; do
-        val=$(echo "$val" | tr -d '[:space:]')
-        if [ "$val" = "$gemini_opt_num" ] && [ -n "$gemini_opt_num" ]; then
-          [ "$selected_gemini" = true ] && selected_gemini=false || selected_gemini=true
-        elif [ "$val" = "$claude_opt_num" ] && [ -n "$claude_opt_num" ]; then
-          [ "$selected_claude" = true ] && selected_claude=false || selected_claude=true
-        elif [ "$val" = "$codex_opt_num" ] && [ -n "$codex_opt_num" ]; then
-          [ "$selected_codex" = true ] && selected_codex=false || selected_codex=true
-        else
-          fail "잘못된 입력입니다: $val"
-          sleep 1
-        fi
-      done
     done
-
-    [ "$selected_gemini" = true ] && TOOL="${TOOL:+$TOOL,}gemini"
-    [ "$selected_claude" = true ] && TOOL="${TOOL:+$TOOL,}claude"
-    [ "$selected_codex" = true ] && TOOL="${TOOL:+$TOOL,}codex"
   fi
 fi
 
