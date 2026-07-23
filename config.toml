@@ -4,6 +4,9 @@
 # 실제 프로젝트에 맞게 복사해서 수정하되, API Key, token, password 같은
 # 민감정보는 이 파일에 작성하지 마세요.
 
+[Agent]
+AGENTS.md 파일을 읽고 규칙에 따라 수행한다.
+
 [project]
 name = "vibe-frame-kit_custom"
 language = "ko"
