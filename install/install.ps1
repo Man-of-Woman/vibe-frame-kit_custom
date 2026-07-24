@@ -450,6 +450,39 @@ try {
 
         # Generate config.toml in project folder if requested
         if ($DeployConfigDirectly) {
+            # Deploy rules file to valid location in the project folder
+            # For Gemini (antigravity), the valid rules location is $ProjFolder/.agents/AGENTS.md
+            # For Claude, the valid rules location is $ProjFolder/CLAUDE.md
+            # For Codex, the valid rules location is $ProjFolder/AGENTS.md
+            $ProjectRulesRelativePath = ""
+            switch ($CurrentTool) {
+                "gemini" {
+                    $ProjectRulesRelativePath = ".agents/AGENTS.md"
+                }
+                "claude" {
+                    $ProjectRulesRelativePath = "CLAUDE.md"
+                }
+                "codex" {
+                    $ProjectRulesRelativePath = "AGENTS.md"
+                }
+            }
+            if (-not [string]::IsNullOrEmpty($ProjectRulesRelativePath)) {
+                $SourceRulesFile = Join-Path $SourceCommonDir "AGENTS.md"
+                $TargetProjectRulesPath = Join-Path $ProjFolder $ProjectRulesRelativePath
+                if (Test-Path $SourceRulesFile) {
+                    $RulesContent = Get-Content -Path $SourceRulesFile -Raw -Encoding UTF8
+                    foreach ($Key in $Mappings.Keys) {
+                        $RulesContent = $RulesContent.Replace($Key, $Mappings[$Key])
+                    }
+                    $ProjectRulesParentDir = Split-Path -Parent $TargetProjectRulesPath
+                    if (-not (Test-Path $ProjectRulesParentDir)) {
+                        New-Item -ItemType Directory -Path $ProjectRulesParentDir -Force | Out-Null
+                    }
+                    Set-Content -Path $TargetProjectRulesPath -Value $RulesContent -Encoding UTF8
+                    Write-Success "Automatically deployed rules file to project folder: $TargetProjectRulesPath"
+                }
+            }
+
             $SampleConfigFile = Join-Path $SourceCommonDir "config\common.config.sample.toml"
             $TargetConfigPath = Join-Path $ProjFolder "config.toml"
             if (Test-Path $SampleConfigFile) {

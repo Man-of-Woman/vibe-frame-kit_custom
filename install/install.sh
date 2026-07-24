@@ -427,6 +427,32 @@ for current_tool in "${selected_tools_arr[@]}"; do
 
   # config.toml 파일 직접 배포
   if [ "$DEPLOY_CONFIG_DIRECTLY" = true ]; then
+    # 지정 프로젝트 폴더의 유효한 위치에 규칙 파일 배포
+    local project_rules_rel_path=""
+    case "$CurrentTool" in
+      "gemini")
+        project_rules_rel_path=".agents/AGENTS.md"
+        ;;
+      "claude")
+        project_rules_rel_path="CLAUDE.md"
+        ;;
+      "codex")
+        project_rules_rel_path="AGENTS.md"
+        ;;
+    esac
+
+    if [ -n "$project_rules_rel_path" ]; then
+      local source_rules_file="$SOURCE_COMMON_DIR/AGENTS.md"
+      local target_project_rules_path="$PROJ_FOLDER/$project_rules_rel_path"
+      if [ -f "$source_rules_file" ]; then
+        local project_rules_parent
+        project_rules_parent="$(dirname "$target_project_rules_path")"
+        mkdir -p "$project_rules_parent"
+        replace_variables "$source_rules_file" "$target_project_rules_path"
+        success "프로젝트 폴더 내에 규칙 파일을 자동 생성했습니다: $target_project_rules_path"
+      fi
+    fi
+
     SAMPLE_CONFIG_FILE="$SOURCE_COMMON_DIR/config/common.config.sample.toml"
     TARGET_CONFIG_PATH="$PROJ_FOLDER/config.toml"
     if [ -f "$SAMPLE_CONFIG_FILE" ]; then
