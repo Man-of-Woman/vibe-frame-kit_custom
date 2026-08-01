@@ -95,13 +95,17 @@ AI 서비스 프로젝트는 아이디어만으로 바로 구현을 시작하면
 
   # 또는 특정 툴 명시 제거
   powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1 -Tool gemini
+
+  # 백업 파일/폴더 목록 확인 후 승인하여 정리
+  powershell -ExecutionPolicy Bypass -File .\install\cleanup-backups.ps1
+  powershell -ExecutionPolicy Bypass -File .\install\cleanup-backups.ps1 -Tool codex
   ```
 
 ### 2) macOS / Linux 환경 (Bash)
 * **설치 명령**:
   ```bash
   # 스크립트 실행 권한 부여
-  chmod +x install/install.sh install/uninstall.sh
+  chmod +x install/install.sh install/uninstall.sh install/cleanup-backups.sh
 
   # 대화식 선택 설치
   ./install/install.sh
@@ -118,6 +122,10 @@ AI 서비스 프로젝트는 아이디어만으로 바로 구현을 시작하면
 
   # 또는 특정 툴 명시 제거
   ./install/uninstall.sh -t gemini
+
+  # 백업 파일/폴더 목록 확인 후 승인하여 정리
+  ./install/cleanup-backups.sh
+  ./install/cleanup-backups.sh codex
   ```
 
 ---
@@ -158,7 +166,8 @@ vibe-frame-kit_custom/
 │   └── study/ (애자일, API, 워크플로우 등 개념 학습 가이드)
 ├── install/ (통합 인스톨러 스크립트)
 │   ├── install.ps1 / install.sh (설치 스크립트)
-│   └── uninstall.ps1 / uninstall.sh (제거 스크립트)
+│   ├── uninstall.ps1 / uninstall.sh (제거 스크립트)
+│   └── cleanup-backups.ps1 / cleanup-backups.sh (백업 정리 스크립트)
 └── walkthrough/ (AI 에이전트의 개발 작업 이력 보존 폴더)
 ```
 
