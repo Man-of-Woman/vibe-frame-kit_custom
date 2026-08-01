@@ -407,6 +407,11 @@ try {
             throw "Common source folder not found: $SourceCommonDir"
         }
 
+        $SourceWalkthroughSkill = Join-Path $SourceCommonDir "skills\walkthrough\SKILL.md"
+        if (-not (Test-Path -LiteralPath $SourceWalkthroughSkill -PathType Leaf)) {
+            throw "Required walkthrough skill not found: $SourceWalkthroughSkill"
+        }
+
         # Backup existing directories
         $DirectoriesToCopy = @("agents", "skills", "config", "prompts", "templates", "docs", "study")
         foreach ($DirName in $DirectoriesToCopy) {
@@ -431,22 +436,29 @@ try {
             }
         }
 
-        # Backup existing RULES.md file
+        # Back up and remove the legacy RULES.md file. Its rules are now merged into the main rules file.
         $TargetRulesMdFile = Join-Path $InstallBaseDir "RULES.md"
         if (Test-Path $TargetRulesMdFile) {
             try {
                 $BackupRulesMdPath = Join-Path $InstallBaseDir "RULES.md.backup.$Timestamp"
                 Copy-Item -Path $TargetRulesMdFile -Destination $BackupRulesMdPath -Force -ErrorAction Stop
-                Write-Success "Backed up existing RULES.md file to $BackupRulesMdPath"
+                Remove-Item -LiteralPath $TargetRulesMdFile -Force -ErrorAction Stop
+                Write-Success "Migrated legacy RULES.md file to $BackupRulesMdPath"
             }
             catch {
-                Write-Host "[WARNING] Failed to backup RULES.md file: $($_.Exception.Message)" -ForegroundColor Yellow
+                Write-Host "[WARNING] Failed to migrate legacy RULES.md file: $($_.Exception.Message)" -ForegroundColor Yellow
             }
         }
 
         # Consolidate and copy
         Safe-CopyAndReplaceDirectory -SourceDir $SourceCommonDir -TargetDir $InstallBaseDir -Mappings $Mappings
         Write-Success "Framework files deployed and template variables substituted."
+
+        $InstalledWalkthroughSkill = Join-Path $InstallBaseDir "skills\walkthrough\SKILL.md"
+        if (-not (Test-Path -LiteralPath $InstalledWalkthroughSkill -PathType Leaf)) {
+            throw "Walkthrough skill installation verification failed: $InstalledWalkthroughSkill"
+        }
+        Write-Success "Verified walkthrough skill installation: $InstalledWalkthroughSkill"
 
         # Generate config.toml in project folder if requested
         if ($DeployConfigDirectly) {
@@ -510,9 +522,9 @@ try {
         Write-Success "vibe-frame-kit ($($Mappings['{{AGENT_NAME}}']) version) installation complete."
         Write-Host "Installed items:" -ForegroundColor Green
         Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/$($Mappings['{{RULES_FILE}}'])"
-        Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/RULES.md"
         Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/agents/"
         Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/skills/"
+        Write-Host "  - $($Mappings['{{INSTALL_PATH}}'])/skills/walkthrough/SKILL.md"
         Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/config/"
         Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/prompts/"
         Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/templates/"

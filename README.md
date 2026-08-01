@@ -35,9 +35,9 @@ AI 서비스 프로젝트는 아이디어만으로 바로 구현을 시작하면
 
 | 설치 유형 | 대상 개발 툴 | 변환 적용 및 특징 | 설치 경로 |
 | --- | --- | --- | --- |
-| **`gemini`** | **Antigravity (Google Gemini)** | `./common/AGENTS.md` ➡️ `AGENTS.md` (Gemini용 치환)<br>`./common/RULES.md` ➡️ `RULES.md` 복사 (14개 스킬) | `~/.gemini/config` |
-| **`claude`** | **Claude (Desktop / Code CLI)** | `./common/AGENTS.md` ➡️ `CLAUDE.md` (Claude용 치환)<br>`./common/RULES.md` ➡️ `RULES.md` 복사 (14개 스킬) | `~/.claude` |
-| **`codex`** | **Codex (Cursor 등)** | `./common/AGENTS.md` ➡️ `AGENTS.md` (Codex용 치환)<br>`./common/RULES.md` ➡️ `RULES.md` 복사 (14개 스킬) | `~/.codex` |
+| **`gemini`** | **Antigravity (Google Gemini)** | 통합 규칙 원본 `./common/AGENTS.md` ➡️ `AGENTS.md` (Gemini용 치환, 15개 스킬 포함) | `~/.gemini/config` |
+| **`claude`** | **Claude (Desktop / Code CLI)** | 통합 규칙 원본 `./common/AGENTS.md` ➡️ `CLAUDE.md` (Claude용 치환, 15개 스킬 포함) | `~/.claude` |
+| **`codex`** | **Codex (Cursor 등)** | 통합 규칙 원본 `./common/AGENTS.md` ➡️ `AGENTS.md` (Codex용 치환, 15개 스킬 포함) | `~/.codex` |
 
 ---
 
@@ -132,11 +132,10 @@ vibe-frame-kit_custom/
 ├── AGENTS.md (저장소 자체 개발 시 AI 에이전트가 따를 지침서)
 ├── config.toml (프로젝트 설정 파일 샘플)
 ├── common/ (공통 개발 프레임워크 원본 에셋)
-│   ├── AGENTS.md (치환용 에이전트별 상세 규칙 원본)
-│   ├── RULES.md (에이전트 제어용 공통 규칙 원본)
+│   ├── AGENTS.md (공통 필수 규칙을 포함한 에이전트별 통합 규칙 원본)
 │   ├── agents/
 │   │   └── routing.md (에이전트 역할 라우팅 매핑 정의)
-│   ├── skills/ (14개 기본 AI 스킬 꾸러미)
+│   ├── skills/ (15개 AI 스킬 꾸러미)
 │   │   ├── requirements-definition/ (요구사항 정의 가이드)
 │   │   ├── function-breakdown/ (기능 분해 가이드)
 │   │   ├── mvp-planning/ (MVP 설계 가이드)
@@ -150,7 +149,8 @@ vibe-frame-kit_custom/
 │   │   ├── domain-model-builder/ (도메인 모델 설계 가이드)
 │   │   ├── backlog-planning/ (스프린트 백로그 가이드)
 │   │   ├── context-map-builder/ (프로젝트 컨텍스트 관리 가이드)
-│   │   └── test-planning-coach/ (테스트 설계 가이드)
+│   │   ├── test-planning-coach/ (테스트 설계 가이드)
+│   │   └── walkthrough/ (작업 완료 보고서 작성 및 PR 반영 가이드)
 │   ├── prompts/ (12개 이터레이션용 한글 프롬프트 템플릿)
 │   ├── templates/ (11개 필수 산출물 표준 마크다운 템플릿)
 │   ├── config/ (스킬 구성 및 TOML 환경 설정 파일)
@@ -166,12 +166,11 @@ vibe-frame-kit_custom/
 
 | 분류 | 대상 경로 / 파일 | 역할 및 상세 내용 |
 | --- | --- | --- |
-| **에이전트 규칙** | `AGENTS.md` / `CLAUDE.md` | 에이전트가 점진적 협업, MVP 준수, 한국어 응답 등의 규칙을 준수하며 개발하도록 제어하는 상세 규칙 지침서 |
-| **공통 필수 규칙** | `RULES.md` | 작업 완료 보고서(Walkthrough) 생성 및 Git 자동화 제어 조건이 명시된 프로세스 지침 |
+| **에이전트 통합 규칙** | `AGENTS.md` / `CLAUDE.md` | 점진적 협업, MVP, 한국어 응답, 작업 완료 보고서 및 Git 자동화 조건을 한 파일에서 제어하는 통합 지침서 |
 | **무시 설정 파일** | `.cursorignore` / `.geminiignore` / `.gitignore` | 불필요한 파일 인덱싱을 차단하여 컨텍스트 토큰을 절약하고 민감 데이터 유출을 막는 보안 필터 파일들 |
 | **프로젝트 설정** | `config.toml` / `common/config/` | 프레임워크 동작 설정 파일 및 Antigravity 등 스킬 구성 목록(`lean-skills.txt` 등) 정의 파일들 |
 | **에이전트 라우팅** | `common/agents/routing.md` | 개발의 각 절차 단계별로 필요한 에이전트 스킬 매핑 정의 문서 |
-| **AI 스킬 모음** | `common/skills/` | 기능 분해, 디버깅, 도메인 설계, 보안 점검 등 14개 주요 작업에 필요한 에이전트 맞춤형 지침서(SKILL.md) 세트 |
+| **AI 스킬 모음** | `common/skills/` | 기능 분해, 디버깅, 도메인 설계, 보안 점검, 완료 보고서 작성 등 15개 주요 작업에 필요한 에이전트 맞춤형 지침서(SKILL.md) 세트 |
 | **프롬프트 템플릿** | `common/prompts/` | 학습자가 에이전트와 대화를 시작할 때 복사하여 편리하게 투입 가능한 12단계 한글 프롬프트 파일들 |
 | **산출물 표준 양식** | `common/templates/` | 요구사항 정의서, MVP 설계서 등 일관성 있는 산출물 빌드를 지원하는 마크다운 템플릿 표준 양식 |
 | **수동/자동 테스트** | `common/skills/test-planning-coach/` | 단위 테스트 시나리오 작성법 및 테스트 코드 자동 생성을 위한 보조 지침 |

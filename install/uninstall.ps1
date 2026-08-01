@@ -95,9 +95,9 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 try {
     # Scan which tools have vibe-frame-kit installed
     $InstalledTools = @()
-    if (Test-Path (Join-Path $HOME ".gemini\config\RULES.md")) { $InstalledTools += "gemini" }
-    if (Test-Path (Join-Path $HOME ".claude\RULES.md")) { $InstalledTools += "claude" }
-    if (Test-Path (Join-Path $HOME ".codex\RULES.md")) { $InstalledTools += "codex" }
+    if (Test-Path (Join-Path $HOME ".gemini\config\AGENTS.md")) { $InstalledTools += "gemini" }
+    if (Test-Path (Join-Path $HOME ".claude\CLAUDE.md")) { $InstalledTools += "claude" }
+    if (Test-Path (Join-Path $HOME ".codex\AGENTS.md")) { $InstalledTools += "codex" }
 
     $SelectedTools = @()
     if ($null -eq $Tool -or $Tool.Count -eq 0) {
@@ -188,6 +188,7 @@ try {
         # Items to remove
         $TargetItems = @(
             $RulesFile,
+            # 이전 버전에서 설치한 통합 전 RULES.md도 함께 정리합니다.
             "RULES.md",
             "agents",
             "skills",

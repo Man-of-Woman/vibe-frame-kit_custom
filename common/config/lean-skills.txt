@@ -16,4 +16,5 @@ security-checker
 domain-model-builder
 backlog-planning
 context-map-builder
+walkthrough
 

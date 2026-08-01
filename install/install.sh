@@ -394,6 +394,12 @@ for current_tool in "${selected_tools_arr[@]}"; do
     exit 1
   fi
 
+  SOURCE_WALKTHROUGH_SKILL="$SOURCE_COMMON_DIR/skills/walkthrough/SKILL.md"
+  if [ ! -f "$SOURCE_WALKTHROUGH_SKILL" ]; then
+    fail "필수 walkthrough 스킬을 찾을 수 없습니다: $SOURCE_WALKTHROUGH_SKILL"
+    exit 1
+  fi
+
   # 기존 디렉토리 백업
   DIRECTORIES_TO_COPY=("agents" "skills" "config" "prompts" "templates" "docs" "study")
   for dir_name in "${DIRECTORIES_TO_COPY[@]}"; do
@@ -413,17 +419,25 @@ for current_tool in "${selected_tools_arr[@]}"; do
     success "기존 $RULES_FILE 파일을 백업했습니다: $BACKUP_RULES_PATH"
   fi
 
-  # 기존 RULES.md 파일 백업
+  # 기존 RULES.md는 주 규칙 파일에 병합되었으므로 백업 후 제거
   TARGET_RULES_MD_FILE="$INSTALL_BASE_DIR/RULES.md"
   if [ -f "$TARGET_RULES_MD_FILE" ]; then
     BACKUP_RULES_MD_PATH="$INSTALL_BASE_DIR/RULES.md.backup.$TIMESTAMP"
     cp "$TARGET_RULES_MD_FILE" "$BACKUP_RULES_MD_PATH"
-    success "기존 RULES.md 파일을 백업했습니다: $BACKUP_RULES_MD_PATH"
+    rm -f "$TARGET_RULES_MD_FILE"
+    success "기존 RULES.md 파일을 통합 규칙으로 마이그레이션했습니다: $BACKUP_RULES_MD_PATH"
   fi
 
   # 복사 및 변수 치환 배포
   copy_and_replace_directory "$SOURCE_COMMON_DIR" "$INSTALL_BASE_DIR"
   success "프레임워크 코어 파일 배포 및 템플릿 치환이 완료되었습니다."
+
+  INSTALLED_WALKTHROUGH_SKILL="$INSTALL_BASE_DIR/skills/walkthrough/SKILL.md"
+  if [ ! -f "$INSTALLED_WALKTHROUGH_SKILL" ]; then
+    fail "walkthrough 스킬 설치 검증에 실패했습니다: $INSTALLED_WALKTHROUGH_SKILL"
+    exit 1
+  fi
+  success "walkthrough 스킬 설치를 확인했습니다: $INSTALLED_WALKTHROUGH_SKILL"
 
   # config.toml 파일 직접 배포
   if [ "$DEPLOY_CONFIG_DIRECTLY" = true ]; then
@@ -509,9 +523,9 @@ except Exception as e:
   success "vibe-frame-kit ($AGENT_NAME 버전) 설치가 완료되었습니다."
   printf '\033[32m설치된 항목:\033[0m\n'
   printf -- '- %s/%s\n' "$INSTALL_PATH" "$RULES_FILE"
-  printf -- '- %s/RULES.md\n' "$INSTALL_PATH"
   printf -- '- %s/agents/\n' "$INSTALL_PATH"
   printf -- '- %s/skills/\n' "$INSTALL_PATH"
+  printf -- '  - %s/skills/walkthrough/SKILL.md\n' "$INSTALL_PATH"
   printf -- '- %s/config/\n' "$INSTALL_PATH"
   printf -- '- %s/prompts/\n' "$INSTALL_PATH"
   printf -- '- %s/templates/\n' "$INSTALL_PATH"

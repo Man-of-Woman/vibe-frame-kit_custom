@@ -34,6 +34,7 @@ security = "security-checker"
 domain_modeling = "domain-model-builder"
 backlog_planning = "backlog-planning"
 context_mapping = "context-map-builder"
+walkthrough = "walkthrough"
 
 
 [defaults]

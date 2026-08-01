@@ -110,9 +110,9 @@ done
 
 # Scan installed tools
 installed_tools=()
-[ -f "$HOME/.gemini/config/RULES.md" ] && installed_tools+=("gemini")
-[ -f "$HOME/.claude/RULES.md" ] && installed_tools+=("claude")
-[ -f "$HOME/.codex/RULES.md" ] && installed_tools+=("codex")
+[ -f "$HOME/.gemini/config/AGENTS.md" ] && installed_tools+=("gemini")
+[ -f "$HOME/.claude/CLAUDE.md" ] && installed_tools+=("claude")
+[ -f "$HOME/.codex/AGENTS.md" ] && installed_tools+=("codex")
 
 if [ -z "$TOOL" ]; then
   if [ ${#installed_tools[@]} -eq 0 ]; then
@@ -185,6 +185,7 @@ for current_tool in "${selected_tools_arr[@]}"; do
   # 삭제할 파일 및 폴더 목록
   TARGET_ITEMS=(
     "$RULES_FILE"
+    # 이전 버전에서 설치한 통합 전 RULES.md도 함께 정리합니다.
     "RULES.md"
     "agents"
     "skills"
