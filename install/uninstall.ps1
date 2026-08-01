@@ -93,6 +93,14 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # ==========================================================
 
 try {
+    $ManagedSkillNames = @(
+        "ai-agent-workflow-builder", "api-service-builder", "backlog-planning",
+        "context-map-builder", "debugging-coach", "domain-model-builder",
+        "function-breakdown", "mvp-planning", "project-structure-builder",
+        "readme-report-writer", "refactoring-coach", "requirements-definition",
+        "security-checker", "test-planning-coach", "walkthrough"
+    )
+
     # Scan which tools have vibe-frame-kit installed
     $InstalledTools = @()
     if (Test-Path (Join-Path $HOME ".gemini\config\AGENTS.md")) { $InstalledTools += "gemini" }
@@ -161,18 +169,22 @@ try {
 
     foreach ($CurrentTool in $SelectedTools) {
         $InstallBaseDir = ""
+        $SkillInstallDir = ""
         $RulesFile = ""
         switch ($CurrentTool) {
             "gemini" {
                 $InstallBaseDir = Join-Path $HOME ".gemini\config"
+                $SkillInstallDir = Join-Path $InstallBaseDir "skills"
                 $RulesFile = "AGENTS.md"
             }
             "claude" {
                 $InstallBaseDir = Join-Path $HOME ".claude"
+                $SkillInstallDir = Join-Path $InstallBaseDir "skills"
                 $RulesFile = "CLAUDE.md"
             }
             "codex" {
                 $InstallBaseDir = Join-Path $HOME ".codex"
+                $SkillInstallDir = Join-Path $HOME ".agents\skills"
                 $RulesFile = "AGENTS.md"
             }
         }
@@ -191,7 +203,6 @@ try {
             # 이전 버전에서 설치한 통합 전 RULES.md도 함께 정리합니다.
             "RULES.md",
             "agents",
-            "skills",
             "config",
             "prompts",
             "templates",
@@ -208,6 +219,26 @@ try {
                 }
                 catch {
                     Write-Host "[WARNING] Failed to remove $ItemName. Skipping." -ForegroundColor Yellow
+                }
+            }
+        }
+
+        $SkillRoots = @($SkillInstallDir)
+        if ($CurrentTool -eq "codex") {
+            # 이전 버전의 Codex 설치 경로도 관리된 스킬만 정리합니다.
+            $SkillRoots += (Join-Path $InstallBaseDir "skills")
+        }
+        foreach ($SkillRoot in ($SkillRoots | Select-Object -Unique)) {
+            foreach ($SkillName in $ManagedSkillNames) {
+                $SkillPath = Join-Path $SkillRoot $SkillName
+                if (Test-Path $SkillPath) {
+                    try {
+                        Remove-Item -Path $SkillPath -Recurse -Force -ErrorAction Stop
+                        Write-Success "Removed skill $SkillName from $SkillRoot."
+                    }
+                    catch {
+                        Write-Host "[WARNING] Failed to remove skill $SkillName from $SkillRoot. Skipping." -ForegroundColor Yellow
+                    }
                 }
             }
         }

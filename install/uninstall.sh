@@ -151,6 +151,13 @@ if [ -z "$TOOL" ]; then
 fi
 
 IFS=',' read -r -a selected_tools_arr <<< "$TOOL"
+MANAGED_SKILL_NAMES=(
+  "ai-agent-workflow-builder" "api-service-builder" "backlog-planning"
+  "context-map-builder" "debugging-coach" "domain-model-builder"
+  "function-breakdown" "mvp-planning" "project-structure-builder"
+  "readme-report-writer" "refactoring-coach" "requirements-definition"
+  "security-checker" "test-planning-coach" "walkthrough"
+)
 
 for current_tool in "${selected_tools_arr[@]}"; do
   current_tool=$(echo "$current_tool" | tr -d '[:space:]')
@@ -158,14 +165,17 @@ for current_tool in "${selected_tools_arr[@]}"; do
   case "$current_tool" in
     gemini)
       INSTALL_BASE_DIR="$HOME/.gemini/config"
+      SKILL_INSTALL_DIR="$INSTALL_BASE_DIR/skills"
       RULES_FILE="AGENTS.md"
       ;;
     claude)
       INSTALL_BASE_DIR="$HOME/.claude"
+      SKILL_INSTALL_DIR="$INSTALL_BASE_DIR/skills"
       RULES_FILE="CLAUDE.md"
       ;;
     codex)
       INSTALL_BASE_DIR="$HOME/.codex"
+      SKILL_INSTALL_DIR="$HOME/.agents/skills"
       RULES_FILE="AGENTS.md"
       ;;
     *)
@@ -188,7 +198,6 @@ for current_tool in "${selected_tools_arr[@]}"; do
     # 이전 버전에서 설치한 통합 전 RULES.md도 함께 정리합니다.
     "RULES.md"
     "agents"
-    "skills"
     "config"
     "prompts"
     "templates"
@@ -202,6 +211,21 @@ for current_tool in "${selected_tools_arr[@]}"; do
       rm -rf "$target_path"
       success "$item_name 항목을 제거했습니다."
     fi
+  done
+
+  SKILL_ROOTS=("$SKILL_INSTALL_DIR")
+  if [ "$current_tool" = "codex" ]; then
+    # 이전 버전의 Codex 설치 경로도 관리된 스킬만 정리합니다.
+    SKILL_ROOTS+=("$INSTALL_BASE_DIR/skills")
+  fi
+  for skill_root in "${SKILL_ROOTS[@]}"; do
+    for skill_name in "${MANAGED_SKILL_NAMES[@]}"; do
+      skill_path="$skill_root/$skill_name"
+      if [ -d "$skill_path" ]; then
+        rm -rf "$skill_path"
+        success "스킬 $skill_name 항목을 제거했습니다: $skill_root"
+      fi
+    done
   done
 
   # 백업 폴더를 제외하고 폴더가 비어 있으면 폴더 자체도 삭제

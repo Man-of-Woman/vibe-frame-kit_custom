@@ -1,6 +1,6 @@
 ---
-name: walkthrough-reporting
-description: Create and maintain approved project walkthrough completion reports and prepare Pull Request summaries from unreflected walkthrough reports. Use whenever a task has finished and Codex must document the work, or when Codex must create or update a Pull Request that should summarize and mark included walkthrough reports.
+name: walkthrough
+description: Create and maintain project walkthrough completion reports and prepare Pull Request summaries from unreflected walkthrough reports. Use when an AI agent finishes a task that requires documentation or when a Pull Request should summarize walkthrough reports.
 ---
 
 # Walkthrough 완료 보고서

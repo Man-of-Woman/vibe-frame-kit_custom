@@ -69,7 +69,8 @@ function Safe-CopyAndReplaceDirectory {
     param(
         [string]$SourceDir,
         [string]$TargetDir,
-        [hashtable]$Mappings
+        [hashtable]$Mappings,
+        [string[]]$ExcludedTopLevelDirectories = @()
     )
     
     if (-not (Test-Path $TargetDir)) {
@@ -80,6 +81,8 @@ function Safe-CopyAndReplaceDirectory {
     foreach ($Item in $Items) {
         $RelativePath = $Item.FullName.Substring($SourceDir.Length + 1)
         if ([string]::IsNullOrEmpty($RelativePath)) { continue }
+        $TopLevelDirectory = ($RelativePath -split '[\\/]')[0]
+        if ($ExcludedTopLevelDirectories -contains $TopLevelDirectory) { continue }
         
         # Handle rename cases
         $DestinationRelativePath = $RelativePath
@@ -366,9 +369,11 @@ try {
         # Define tool configurations
         $Mappings = @{}
         $InstallBaseDir = ""
+        $SkillInstallDir = ""
         switch ($CurrentTool) {
             "gemini" {
                 $InstallBaseDir = Join-Path $HOME ".gemini\config"
+                $SkillInstallDir = Join-Path $InstallBaseDir "skills"
                 $Mappings["{{AGENT_NAME}}"] = "Gemini"
                 $Mappings["{{INSTALL_PATH}}"] = "~/.gemini/config"
                 $Mappings["{{CONFIG_FILE}}"] = "gemini.config.sample.toml"
@@ -376,6 +381,7 @@ try {
             }
             "claude" {
                 $InstallBaseDir = Join-Path $HOME ".claude"
+                $SkillInstallDir = Join-Path $InstallBaseDir "skills"
                 $Mappings["{{AGENT_NAME}}"] = "Claude"
                 $Mappings["{{INSTALL_PATH}}"] = "~/.claude"
                 $Mappings["{{CONFIG_FILE}}"] = "claude.config.sample.toml"
@@ -383,6 +389,7 @@ try {
             }
             "codex" {
                 $InstallBaseDir = Join-Path $HOME ".codex"
+                $SkillInstallDir = Join-Path $HOME ".agents\skills"
                 $Mappings["{{AGENT_NAME}}"] = "Codex"
                 $Mappings["{{INSTALL_PATH}}"] = "~/.codex"
                 $Mappings["{{CONFIG_FILE}}"] = "codex.config.sample.toml"
@@ -413,7 +420,7 @@ try {
         }
 
         # Backup existing directories
-        $DirectoriesToCopy = @("agents", "skills", "config", "prompts", "templates", "docs", "study")
+        $DirectoriesToCopy = @("agents", "config", "prompts", "templates", "docs", "study")
         foreach ($DirName in $DirectoriesToCopy) {
             $TargetDir = Join-Path $InstallBaseDir $DirName
             if (Test-Path $TargetDir) {
@@ -421,6 +428,12 @@ try {
                 Safe-BackupDirectory -SourceDir $TargetDir -BackupDir $BackupDir
                 Write-Success "Backed up existing $DirName to $BackupDir"
             }
+        }
+
+        if (Test-Path $SkillInstallDir) {
+            $SkillBackupDir = "$SkillInstallDir.backup.$Timestamp"
+            Safe-BackupDirectory -SourceDir $SkillInstallDir -BackupDir $SkillBackupDir
+            Write-Success "Backed up existing skills to $SkillBackupDir"
         }
 
         # Backup existing rules file
@@ -451,10 +464,11 @@ try {
         }
 
         # Consolidate and copy
-        Safe-CopyAndReplaceDirectory -SourceDir $SourceCommonDir -TargetDir $InstallBaseDir -Mappings $Mappings
+        Safe-CopyAndReplaceDirectory -SourceDir $SourceCommonDir -TargetDir $InstallBaseDir -Mappings $Mappings -ExcludedTopLevelDirectories @("skills")
+        Safe-CopyAndReplaceDirectory -SourceDir (Join-Path $SourceCommonDir "skills") -TargetDir $SkillInstallDir -Mappings $Mappings
         Write-Success "Framework files deployed and template variables substituted."
 
-        $InstalledWalkthroughSkill = Join-Path $InstallBaseDir "skills\walkthrough\SKILL.md"
+        $InstalledWalkthroughSkill = Join-Path $SkillInstallDir "walkthrough\SKILL.md"
         if (-not (Test-Path -LiteralPath $InstalledWalkthroughSkill -PathType Leaf)) {
             throw "Walkthrough skill installation verification failed: $InstalledWalkthroughSkill"
         }
@@ -523,8 +537,8 @@ try {
         Write-Host "Installed items:" -ForegroundColor Green
         Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/$($Mappings['{{RULES_FILE}}'])"
         Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/agents/"
-        Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/skills/"
-        Write-Host "  - $($Mappings['{{INSTALL_PATH}}'])/skills/walkthrough/SKILL.md"
+        Write-Host "- $SkillInstallDir"
+        Write-Host "  - $InstalledWalkthroughSkill"
         Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/config/"
         Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/prompts/"
         Write-Host "- $($Mappings['{{INSTALL_PATH}}'])/templates/"

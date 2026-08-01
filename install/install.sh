@@ -83,6 +83,7 @@ except Exception as e:
 copy_and_replace_directory() {
   local src_dir="$1"
   local dest_dir="$2"
+  local exclude_skills="${3:-false}"
   
   mkdir -p "$dest_dir"
   
@@ -90,6 +91,9 @@ copy_and_replace_directory() {
   find "$src_dir" -mindepth 1 | while read -r item; do
     local rel_path="${item#$src_dir/}"
     local dest_item="$dest_dir/$rel_path"
+    if [ "$exclude_skills" = true ] && { [ "$rel_path" = "skills" ] || [[ "$rel_path" == skills/* ]]; }; then
+      continue
+    fi
     
     # AGENTS.md ➡️ RULES_FILE 명칭 변경
     if [ "$rel_path" = "AGENTS.md" ]; then
@@ -357,6 +361,7 @@ for current_tool in "${selected_tools_arr[@]}"; do
   case "$current_tool" in
     gemini)
       INSTALL_BASE_DIR="$HOME/.gemini/config"
+      SKILL_INSTALL_DIR="$INSTALL_BASE_DIR/skills"
       AGENT_NAME="Gemini"
       INSTALL_PATH="~/.gemini/config"
       CONFIG_FILE="gemini.config.sample.toml"
@@ -364,6 +369,7 @@ for current_tool in "${selected_tools_arr[@]}"; do
       ;;
     claude)
       INSTALL_BASE_DIR="$HOME/.claude"
+      SKILL_INSTALL_DIR="$INSTALL_BASE_DIR/skills"
       AGENT_NAME="Claude"
       INSTALL_PATH="~/.claude"
       CONFIG_FILE="claude.config.sample.toml"
@@ -371,6 +377,7 @@ for current_tool in "${selected_tools_arr[@]}"; do
       ;;
     codex)
       INSTALL_BASE_DIR="$HOME/.codex"
+      SKILL_INSTALL_DIR="$HOME/.agents/skills"
       AGENT_NAME="Codex"
       INSTALL_PATH="~/.codex"
       CONFIG_FILE="codex.config.sample.toml"
@@ -401,7 +408,7 @@ for current_tool in "${selected_tools_arr[@]}"; do
   fi
 
   # 기존 디렉토리 백업
-  DIRECTORIES_TO_COPY=("agents" "skills" "config" "prompts" "templates" "docs" "study")
+  DIRECTORIES_TO_COPY=("agents" "config" "prompts" "templates" "docs" "study")
   for dir_name in "${DIRECTORIES_TO_COPY[@]}"; do
     target_dir="$INSTALL_BASE_DIR/$dir_name"
     if [ -d "$target_dir" ]; then
@@ -410,6 +417,12 @@ for current_tool in "${selected_tools_arr[@]}"; do
       success "기존 $dir_name 폴더를 백업했습니다: $BACKUP_DIR"
     fi
   done
+
+  if [ -d "$SKILL_INSTALL_DIR" ]; then
+    SKILL_BACKUP_DIR="$SKILL_INSTALL_DIR.backup.$TIMESTAMP"
+    cp -R "$SKILL_INSTALL_DIR" "$SKILL_BACKUP_DIR"
+    success "기존 skills 폴더를 백업했습니다: $SKILL_BACKUP_DIR"
+  fi
 
   # 기존 규칙 파일 백업
   TARGET_RULES_FILE="$INSTALL_BASE_DIR/$RULES_FILE"
@@ -429,10 +442,11 @@ for current_tool in "${selected_tools_arr[@]}"; do
   fi
 
   # 복사 및 변수 치환 배포
-  copy_and_replace_directory "$SOURCE_COMMON_DIR" "$INSTALL_BASE_DIR"
+  copy_and_replace_directory "$SOURCE_COMMON_DIR" "$INSTALL_BASE_DIR" true
+  copy_and_replace_directory "$SOURCE_COMMON_DIR/skills" "$SKILL_INSTALL_DIR"
   success "프레임워크 코어 파일 배포 및 템플릿 치환이 완료되었습니다."
 
-  INSTALLED_WALKTHROUGH_SKILL="$INSTALL_BASE_DIR/skills/walkthrough/SKILL.md"
+  INSTALLED_WALKTHROUGH_SKILL="$SKILL_INSTALL_DIR/walkthrough/SKILL.md"
   if [ ! -f "$INSTALLED_WALKTHROUGH_SKILL" ]; then
     fail "walkthrough 스킬 설치 검증에 실패했습니다: $INSTALLED_WALKTHROUGH_SKILL"
     exit 1
@@ -524,8 +538,8 @@ except Exception as e:
   printf '\033[32m설치된 항목:\033[0m\n'
   printf -- '- %s/%s\n' "$INSTALL_PATH" "$RULES_FILE"
   printf -- '- %s/agents/\n' "$INSTALL_PATH"
-  printf -- '- %s/skills/\n' "$INSTALL_PATH"
-  printf -- '  - %s/skills/walkthrough/SKILL.md\n' "$INSTALL_PATH"
+  printf -- '- %s\n' "$SKILL_INSTALL_DIR"
+  printf -- '  - %s\n' "$INSTALLED_WALKTHROUGH_SKILL"
   printf -- '- %s/config/\n' "$INSTALL_PATH"
   printf -- '- %s/prompts/\n' "$INSTALL_PATH"
   printf -- '- %s/templates/\n' "$INSTALL_PATH"

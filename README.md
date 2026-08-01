@@ -37,7 +37,7 @@ AI 서비스 프로젝트는 아이디어만으로 바로 구현을 시작하면
 | --- | --- | --- | --- |
 | **`gemini`** | **Antigravity (Google Gemini)** | 통합 규칙 원본 `./common/AGENTS.md` ➡️ `AGENTS.md` (Gemini용 치환, 15개 스킬 포함) | `~/.gemini/config` |
 | **`claude`** | **Claude (Desktop / Code CLI)** | 통합 규칙 원본 `./common/AGENTS.md` ➡️ `CLAUDE.md` (Claude용 치환, 15개 스킬 포함) | `~/.claude` |
-| **`codex`** | **Codex (Cursor 등)** | 통합 규칙 원본 `./common/AGENTS.md` ➡️ `AGENTS.md` (Codex용 치환, 15개 스킬 포함) | `~/.codex` |
+| **`codex`** | **Codex (Cursor 등)** | 통합 규칙 원본 `./common/AGENTS.md` ➡️ `AGENTS.md` (Codex용 치환, 15개 스킬 포함) | 설정: `~/.codex`<br>스킬: `~/.agents/skills` |
 
 ---
 
