@@ -128,6 +128,42 @@ AI 서비스 프로젝트는 아이디어만으로 바로 구현을 시작하면
   ./install/cleanup-backups.sh codex
   ```
 
+### 3) 최근 설치 스크립트 동작
+
+설치 및 제거 스크립트는 다음 동작을 지원합니다.
+
+* `-Tool` 또는 `-t`를 생략하면 설치된 환경을 확인하고, 여러 환경을 설치·제거할 때 방향키와 스페이스바를 사용하는 체크리스트를 표시합니다. `gemini`, `claude`, `codex`를 여러 개 선택할 수 있습니다.
+* 설치 과정에서 프로젝트 폴더를 지정하면 해당 폴더에 에이전트별 규칙 파일과 `config.toml`을 자동으로 배포합니다.
+  * Gemini: `<프로젝트>/.agents/AGENTS.md`
+  * Claude: `<프로젝트>/CLAUDE.md`
+  * Codex: `<프로젝트>/AGENTS.md`
+* `-GitUrl` 또는 `-g`로 원격 저장소 주소를 입력하면 `config.toml`의 Git 설정에 반영하고, 프로젝트 폴더의 Git 원격 저장소와 동기화합니다. 원격 주소를 입력하지 않으면 Git 자동화 옵션은 비활성화됩니다.
+* 기존 전역 설정과 스킬은 설치 전에 타임스탬프가 포함된 `backup.*` 또는 `*.backup.*` 항목으로 백업됩니다. 백업은 자동 삭제되지 않으며, 목록을 확인하고 `DELETE`를 정확히 입력한 경우에만 정리됩니다.
+
+예시:
+
+```powershell
+# 특정 툴을 설치하고 프로젝트 원격 저장소를 지정
+powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool codex -GitUrl https://github.com/your-org/your-repo.git
+
+# 여러 툴을 한 번에 제거
+powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1 -Tool gemini,claude,codex
+
+# Codex 관련 백업만 검색하고, 표시된 항목을 확인한 뒤 선택적으로 삭제
+powershell -ExecutionPolicy Bypass -File .\install\cleanup-backups.ps1 -Tool codex
+```
+
+```bash
+# 여러 툴을 한 번에 제거
+./install/uninstall.sh -t gemini,claude,codex
+
+# Codex 관련 백업만 검색하고 선택적으로 삭제
+./install/cleanup-backups.sh codex
+```
+
+> [!WARNING]
+> `cleanup-backups` 스크립트는 지정된 도구의 설치 경로 최상위에서 백업 이름 패턴(`backup.*`, `*.backup.*`)과 일치하는 항목만 대상으로 합니다. 삭제 전 목록을 반드시 확인하고, 보관이 필요한 백업은 별도 위치에 복사하세요.
+
 ---
 
 ## 5. 저장소 상세 구조 및 파일 역할 안내
