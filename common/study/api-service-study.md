@@ -27,13 +27,13 @@
 | --- | --- | --- |
 | **router** | `app/api/routes/` | HTTP Endpoints 정의, 요청 파라미터 수신 및 최종 Response schema 반환 |
 | **schema** | `app/api/schemas/` | Pydantic 기반의 Request/Response 데이터 검증 및 데이터 구조체 선언 |
-| **service** | `app/services/` | 실제 AI API(OpenAI, Gemini 등) 호출, DB 읽기/쓰기, 비즈니스 연산 수행 |
+| **service** | `app/services/` | 실제 AI API(OpenAI, Gemini, Claude, Muse 등) 호출, DB 읽기/쓰기, 비즈니스 연산 수행 |
 
 ---
 
 ## 3. 예외 및 오류 처리 설계
 * 입력값 부재 또는 형식 검증 오류: `400 Bad Request` 또는 `422 Unprocessable Entity` 반환.
-* 외부 AI API 연동 실패 (Gemini, OpenAI 연결 차단 등): `502 Bad Gateway` 또는 `500 Internal Server Error` 반환.
+* 외부 AI API 연동 실패 (OpenAI, Gemini, Claude, Muse 등 연결 차단): `502 Bad Gateway` 또는 `500 Internal Server Error` 반환.
 * 보안 주의사항: 에러 응답 및 Stack trace 로그에 절대 API Key나 환경 변수 비밀값이 출력되지 않도록 설계할 것.
 
 ---

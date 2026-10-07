@@ -23,7 +23,7 @@
 | 준비 항목 | 확인 내용 |
 | --- | --- |
 | GitHub 저장소 | `vibe-frame-kit` 저장소가 접근 가능한지 확인합니다. |
-| 설치 스크립트 | Windows용 `scripts/install.ps1`, macOS/Linux용 `scripts/install.sh`가 포함되어 있는지 확인합니다. |
+| 설치 스크립트 | Windows용 `install/install.ps1`, macOS/Linux용 `install/install.sh`가 포함되어 있는지 확인합니다. |
 | 학생 가이드 | `docs/student-guide.md`를 수강생에게 안내합니다. |
 | 예시 프로젝트 | 간단한 AI 서비스 예시를 하나 준비하면 좋습니다. |
 | API Key 안내 | OpenAI API 또는 {{AGENT_NAME}} API Key 발급 방법과 보안 주의사항을 안내합니다. |
@@ -44,7 +44,7 @@
 Windows 기준 설치 명령:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
+powershell -ExecutionPolicy Bypass -File .\install\install.ps1
 ```
 
 설치 확인 명령:
@@ -60,7 +60,7 @@ dir {{INSTALL_PATH}}\skills
 | --- | --- |
 | `{{INSTALL_PATH}}/{{RULES_FILE}}` | 파일이 존재해야 합니다. |
 | `{{INSTALL_PATH}}/agents/` | `routing.md`가 있어야 합니다. |
-| `{{INSTALL_PATH}}/skills/` | 14개 Skill 폴더가 있어야 합니다. |
+| `{{INSTALL_PATH}}/skills/` | 15개 Skill 폴더가 있어야 합니다. |
 | `{{INSTALL_PATH}}/config/` | `lean-skills.txt`, `{{CONFIG_FILE}}`이 있어야 합니다. |
 | `{{INSTALL_PATH}}/prompts/` | 12개 프롬프트 파일이 있어야 합니다. |
 | `{{INSTALL_PATH}}/templates/` | 11개 템플릿 파일이 있어야 합니다. |
@@ -260,7 +260,7 @@ API Key, token, password, credentials.json, auth.json, .env 파일이 포함되�
 
 | 문제 | 원인 | 대응법 |
 | --- | --- | --- |
-| 설치 스크립트가 실행되지 않음 | PowerShell 실행 정책 또는 경로 문제 | `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1`로 실행하게 합니다. |
+| 설치 스크립트가 실행되지 않음 | PowerShell 실행 정책 또는 경로 문제 | `powershell -ExecutionPolicy Bypass -File .\install\install.ps1`로 실행하게 합니다. |
 | `{{INSTALL_PATH}}`에 파일이 없음 | 설치 위치가 잘못되었거나 스크립트 실행 실패 | `dir {{INSTALL_PATH}}`로 확인하고 다시 설치합니다. |
 | 수강생이 전체 서비스를 한 번에 요청함 | 개발 범위를 줄이는 경험 부족 | 요구사항 정의와 MVP 설계부터 다시 진행시킵니다. |
 | 오류 로그 없이 질문함 | 에러 메시지의 중요성을 모름 | 실행 명령, 전체 로그, 관련 파일을 함께 보내게 합니다. |

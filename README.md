@@ -1,6 +1,6 @@
 # vibe-frame-kit
 
-`vibe-frame-kit`은 재직자 AI 서비스 개발 과정 수강생들이 다양한 AI 개발 툴(Antigravity/Gemini, Claude, Codex/Cursor 등)을 활용하여 프로젝트를 점진적이고 구조적으로 진행할 수 있도록 돕는 공통 Vibe Frame Kit 프레임워크입니다.
+`vibe-frame-kit`은 재직자 AI 서비스 개발 과정 수강생들이 다양한 AI 개발 툴(Antigravity/Gemini, Claude, Codex/Cursor, Muse, OpenCode 등)을 활용하여 프로젝트를 점진적이고 구조적으로 진행할 수 있도록 돕는 공통 Vibe Frame Kit 프레임워크입니다.
 
 이 저장소는 특정 AI 서비스의 완성 코드를 제공하기보다, 어떤 프로젝트를 만들든 공통으로 적용할 수 있는 개발 흐름, 프롬프트, 템플릿, 규칙, 제한 사항을 제공하는 것을 목표로 합니다.
 
@@ -38,6 +38,11 @@ AI 서비스 프로젝트는 아이디어만으로 바로 구현을 시작하면
 | **`gemini`** | **Antigravity (Google Gemini)** | 통합 규칙 원본 `./common/AGENTS.md` ➡️ `AGENTS.md` (Gemini용 치환, 15개 스킬 포함) | `~/.gemini/config` |
 | **`claude`** | **Claude (Desktop / Code CLI)** | 통합 규칙 원본 `./common/AGENTS.md` ➡️ `CLAUDE.md` (Claude용 치환, 15개 스킬 포함) | `~/.claude` |
 | **`codex`** | **Codex (Cursor 등)** | 통합 규칙 원본 `./common/AGENTS.md` ➡️ `AGENTS.md` (Codex용 치환, 15개 스킬 포함) | 설정: `~/.codex`<br>스킬: `~/.agents/skills` |
+| **`muse`** | **Muse (Muse Spark / Muse Code CLI)** | 통합 규칙 원본 `./common/AGENTS.md` ➡️ `AGENTS.md` (Muse용 치환, 15개 스킬 포함)<br>`settings.json` 보장 (`schema_version: 1`, 기존 MCP 설정 유지) | `~/.config/muse` |
+| **`opencode`** | **OpenCode** | 통합 규칙 원본 `./common/AGENTS.md` ➡️ `AGENTS.md` (OpenCode용 치환, 15개 스킬 포함) | `~/.config/opencode` |
+
+> Muse 사용법: 전역 규칙은 `~/.config/muse/AGENTS.md`, 전역 스킬은 `~/.config/muse/skills/`에 배포됩니다. Muse는 프로젝트 루트 `AGENTS.md`를 `.git` 경계까지 탐색하며 읽고, `~/.agents/skills`, `~/.claude/skills`, `~/.codex/skills`도 자동 탐색하므로 복수 툴 설치 시 스킬이 공유됩니다. 프로젝트 시작 전 `muse init`으로 생성된 `AGENTS.md`가 있으면 덮어쓰지 않고 내용을 병합하세요.
+> OpenCode 사용법: 전역 규칙은 `~/.config/opencode/AGENTS.md`, 전역 스킬은 `~/.config/opencode/skills/`에 배포됩니다. OpenCode는 전역 파일과 프로젝트 루트 `AGENTS.md`를 결합하여 읽습니다.
 
 ---
 
@@ -80,13 +85,15 @@ AI 서비스 프로젝트는 아이디어만으로 바로 구현을 시작하면
 ### 1) Windows 환경 (PowerShell)
 * **설치 명령**:
   ```powershell
-  # 대화식 선택 설치 (원격 저장소 주소는 선택 사항)
+  # 대화식 선택 설치
   powershell -ExecutionPolicy Bypass -File .\install\install.ps1
 
   # 또는 특정 툴 명시 설치
-  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool gemini -GitUrl https://github.com/your-org/your-repo.git
-  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool claude -GitUrl https://github.com/your-org/your-repo.git
-  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool codex -GitUrl https://github.com/your-org/your-repo.git
+  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool gemini
+  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool claude
+  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool codex
+  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool muse
+  powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool opencode
   ```
 * **제거 명령**:
   ```powershell
@@ -95,6 +102,10 @@ AI 서비스 프로젝트는 아이디어만으로 바로 구현을 시작하면
 
   # 또는 특정 툴 명시 제거
   powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1 -Tool gemini
+  powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1 -Tool claude
+  powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1 -Tool codex
+  powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1 -Tool muse
+  powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1 -Tool opencode
 
   # 백업 파일/폴더 목록 확인 후 승인하여 정리
   powershell -ExecutionPolicy Bypass -File .\install\cleanup-backups.ps1
@@ -111,9 +122,11 @@ AI 서비스 프로젝트는 아이디어만으로 바로 구현을 시작하면
   ./install/install.sh
 
   # 또는 특정 툴 명시 설치
-  ./install/install.sh -t gemini -g https://github.com/your-org/your-repo.git
-  ./install/install.sh -t claude -g https://github.com/your-org/your-repo.git
-  ./install/install.sh -t codex -g https://github.com/your-org/your-repo.git
+  ./install/install.sh -t gemini
+  ./install/install.sh -t claude
+  ./install/install.sh -t codex
+  ./install/install.sh -t muse
+  ./install/install.sh -t opencode
   ```
 * **제거 명령**:
   ```bash
@@ -122,6 +135,10 @@ AI 서비스 프로젝트는 아이디어만으로 바로 구현을 시작하면
 
   # 또는 특정 툴 명시 제거
   ./install/uninstall.sh -t gemini
+  ./install/uninstall.sh -t claude
+  ./install/uninstall.sh -t codex
+  ./install/uninstall.sh -t muse
+  ./install/uninstall.sh -t opencode
 
   # 백업 파일/폴더 목록 확인 후 승인하여 정리
   ./install/cleanup-backups.sh
@@ -132,22 +149,18 @@ AI 서비스 프로젝트는 아이디어만으로 바로 구현을 시작하면
 
 설치 및 제거 스크립트는 다음 동작을 지원합니다.
 
-* `-Tool` 또는 `-t`를 생략하면 설치된 환경을 확인하고, 여러 환경을 설치·제거할 때 방향키와 스페이스바를 사용하는 체크리스트를 표시합니다. `gemini`, `claude`, `codex`를 여러 개 선택할 수 있습니다.
-* 설치 과정에서 프로젝트 폴더를 지정하면 해당 폴더에 에이전트별 규칙 파일과 `config.toml`을 자동으로 배포합니다.
-  * Gemini: `<프로젝트>/.agents/AGENTS.md`
-  * Claude: `<프로젝트>/CLAUDE.md`
-  * Codex: `<프로젝트>/AGENTS.md`
-* `-GitUrl` 또는 `-g`로 원격 저장소 주소를 입력하면 `config.toml`의 Git 설정에 반영하고, 프로젝트 폴더의 Git 원격 저장소와 동기화합니다. 원격 주소를 입력하지 않으면 Git 자동화 옵션은 비활성화됩니다.
+* `-Tool` 또는 `-t`를 생략하면 설치된 환경을 확인하고, 여러 환경을 설치·제거할 때 방향키와 스페이스바를 사용하는 체크리스트를 표시합니다. `gemini`, `claude`, `codex`, `muse`, `opencode`를 여러 개 선택할 수 있습니다.
+* 설치 스크립트는 전역 설정 경로에만 배포합니다. 프로젝트 폴더 지정과 Git 원격 저장소 동기화는 수행하지 않으며, `config.toml`의 Git 설정(`remote_repository_url`, `auto_commit_push`)은 프로젝트별로 직접 작성합니다.
 * 기존 전역 설정과 스킬은 설치 전에 타임스탬프가 포함된 `backup.*` 또는 `*.backup.*` 항목으로 백업됩니다. 백업은 자동 삭제되지 않으며, 목록을 확인하고 `DELETE`를 정확히 입력한 경우에만 정리됩니다.
 
 예시:
 
 ```powershell
-# 특정 툴을 설치하고 프로젝트 원격 저장소를 지정
-powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool codex -GitUrl https://github.com/your-org/your-repo.git
+# 특정 툴 설치
+powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool opencode
 
 # 여러 툴을 한 번에 제거
-powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1 -Tool gemini,claude,codex
+powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1 -Tool gemini,claude,codex,muse,opencode
 
 # Codex 관련 백업만 검색하고, 표시된 항목을 확인한 뒤 선택적으로 삭제
 powershell -ExecutionPolicy Bypass -File .\install\cleanup-backups.ps1 -Tool codex
@@ -155,7 +168,7 @@ powershell -ExecutionPolicy Bypass -File .\install\cleanup-backups.ps1 -Tool cod
 
 ```bash
 # 여러 툴을 한 번에 제거
-./install/uninstall.sh -t gemini,claude,codex
+./install/uninstall.sh -t gemini,claude,codex,muse,opencode
 
 # Codex 관련 백업만 검색하고 선택적으로 삭제
 ./install/cleanup-backups.sh codex
@@ -213,7 +226,7 @@ vibe-frame-kit_custom/
 | --- | --- | --- |
 | **에이전트 통합 규칙** | `AGENTS.md` / `CLAUDE.md` | 점진적 협업, MVP, 한국어 응답, 작업 완료 보고서 및 Git 자동화 조건을 한 파일에서 제어하는 통합 지침서 |
 | **무시 설정 파일** | `.cursorignore` / `.geminiignore` / `.gitignore` | 불필요한 파일 인덱싱을 차단하여 컨텍스트 토큰을 절약하고 민감 데이터 유출을 막는 보안 필터 파일들 |
-| **프로젝트 설정** | `config.toml` / `common/config/` | 프레임워크 동작 설정 파일 및 Antigravity 등 스킬 구성 목록(`lean-skills.txt` 등) 정의 파일들 |
+| **프로젝트 설정** | `config.toml` / `common/config/` | 프레임워크 동작 설정 파일 및 스킬 구성 목록(`lean-skills.txt` 등) 정의 파일들 |
 | **에이전트 라우팅** | `common/agents/routing.md` | 개발의 각 절차 단계별로 필요한 에이전트 스킬 매핑 정의 문서 |
 | **AI 스킬 모음** | `common/skills/` | 기능 분해, 디버깅, 도메인 설계, 보안 점검, 완료 보고서 작성 등 15개 주요 작업에 필요한 에이전트 맞춤형 지침서(SKILL.md) 세트 |
 | **프롬프트 템플릿** | `common/prompts/` | 학습자가 에이전트와 대화를 시작할 때 복사하여 편리하게 투입 가능한 12단계 한글 프롬프트 파일들 |
@@ -235,7 +248,7 @@ vibe-frame-kit_custom/
 name = "my-ai-service-project"        # 진행할 AI 서비스 프로젝트명
 
 [agent]
-name = "Gemini"                       # 에이전트 툴 명칭 (Gemini, Claude, Codex 등)
+name = "Gemini"                       # 에이전트 툴 명칭 (Gemini, Claude, Codex, Muse, OpenCode 등)
 install_path = "~/.gemini/config"     # 에이전트가 설치되어 관리되는 전역 설정 주소
 rules_file = "AGENTS.md"              # 해당 에이전트가 로드해서 해석할 규칙 파일 이름
 config_file = "config.toml"           # 에이전트 설정 파일의 명칭
@@ -246,11 +259,11 @@ enable_metadata_logging = true        # 보고서에 사용 모델명, 작업 �
 
 [git]
 auto_commit_push = true               # 작업 완료 후 한글 커밋 메시지를 적용하여 add/commit/push하도록 유도하는 자동화 스위치
-remote_repository_url = "https://..." # 프로젝트 원격 Git 리포지토리 URL (스크립트 설치 시 자동 주입 가능)
+remote_repository_url = "https://..." # 프로젝트 원격 Git 리포지토리 URL (프로젝트 config.toml에 직접 기재)
 ```
 
 > [!TIP]
-> * `auto_commit_push` 옵션을 `true`로 설정하면 원격 URL 주소와 연동하여 커밋 및 푸시 가이드라인을 에이전트가 직접 제안하거나 제어합니다. 만약 원격 URL이 비어 있는 경우 설치기가 이 옵션을 자동으로 `false`로 격하시켜 오류를 예방합니다.
+> * `auto_commit_push` 옵션을 `true`로 설정하면 원격 URL 주소와 연동하여 커밋 및 푸시 가이드라인을 에이전트가 직접 제안하거나 제어합니다. 원격 URL이 비어 있는 경우 `false`로 설정하여 오류를 예방하세요.
 
 ---
 
@@ -305,7 +318,7 @@ DATABASE_URL=postgresql://user:pass@localhost:5432/db
 ## 9. 저작권 및 라이선스 안내 (Attribution & License)
 
 * **원본 저작물 출처**: 이 프로젝트는 [PieterKim/vibe-frame-kit](https://github.com/PieterKim/vibe-frame-kit.git) 원본 저장소를 기반으로 합니다.
-* **프로젝트 성격**: 본 저장소는 원본 저작물인 `vibe-frame-kit`을 교육 실습 환경 및 특정 AI 에이전트(Gemini, Claude, Codex 등) 최적화 목적에 맞게 변경하고 개선한 **커스터마이징 수정안(Customized version)**입니다.
+* **프로젝트 성격**: 본 저장소는 원본 저작물인 `vibe-frame-kit`을 교육 실습 환경 및 특정 AI 에이전트(Gemini, Claude, Codex, Muse, OpenCode 등) 최적화 목적에 맞게 변경하고 개선한 **커스터마이징 수정안(Customized version)**입니다.
 * **라이선스 규정**:
   - 원본 저작물은 **MIT License**를 따릅니다.
   - 본 수정본 역시 원본의 라이선스 규정을 상속하며, 자유로운 복제, 수정, 배포 및 상업적 이용이 허용됩니다. 단, 원본 저작자 및 라이선스 고지 사항은 유지되어야 합니다.

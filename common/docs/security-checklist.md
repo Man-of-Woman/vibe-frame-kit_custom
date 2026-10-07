@@ -185,9 +185,9 @@ GitHub에 push하기 전에 최종 확인하세요.
 - [ ] README에 실제 비밀값이 없다.
 - [ ] 최종 보고서에 실제 비밀값이 없다.
 - [ ] `.gitignore`가 보안 파일을 충분히 제외하고 있다.
-- [ ] Antigravity에 보안 점검을 요청했다.
+- [ ] {{AGENT_NAME}}에 보안 점검을 요청했다.
 
-Antigravity 요청 예시:
+{{AGENT_NAME}} 요청 예시:
 
 ```text
 GitHub에 push하기 전에 민감정보와 보안 위험을 점검해줘.

@@ -3,7 +3,7 @@
 # vibe-frame-kit 통합 Bash 제거 스크립트
 #
 # Usage:
-#   ./uninstall.sh -t <gemini|claude|codex>
+#   ./uninstall.sh -t <gemini|claude|codex|muse|opencode>
 #   ./uninstall.sh (대화식 선택)
 
 set -euo pipefail
@@ -61,10 +61,10 @@ show_multi_select_menu() {
     done
     printf "\n"
 
-    # read key input
-    read -rsn1 key
+    # read key input (read 실패/EOF·타임아웃은 메뉴 루프 보호를 위해 무시)
+    read -rsn1 key || true
     if [[ "$key" == $'\x1b' ]]; then
-      read -rsn2 -t 0.1 key
+      read -rsn2 -t 0.1 key || true
       if [[ "$key" == "[A" ]]; then # Up
         selected_index=$(( (selected_index - 1 + num_options) % num_options ))
       elif [[ "$key" == "[B" ]]; then # Down
@@ -113,6 +113,8 @@ installed_tools=()
 [ -f "$HOME/.gemini/config/AGENTS.md" ] && installed_tools+=("gemini")
 [ -f "$HOME/.claude/CLAUDE.md" ] && installed_tools+=("claude")
 [ -f "$HOME/.codex/AGENTS.md" ] && installed_tools+=("codex")
+[ -f "$HOME/.config/muse/AGENTS.md" ] && installed_tools+=("muse")
+[ -f "$HOME/.config/opencode/AGENTS.md" ] && installed_tools+=("opencode")
 
 if [ -z "$TOOL" ]; then
   if [ ${#installed_tools[@]} -eq 0 ]; then
@@ -135,6 +137,8 @@ if [ -z "$TOOL" ]; then
         gemini) options+=("Gemini (Antigravity):gemini:false") ;;
         claude) options+=("Claude (Desktop / Code CLI):claude:false") ;;
         codex) options+=("Codex (Cursor 등):codex:false") ;;
+        muse) options+=("Muse (Muse Spark / Muse Code CLI):muse:false") ;;
+        opencode) options+=("OpenCode:opencode:false") ;;
       esac
     done
 
@@ -176,6 +180,16 @@ for current_tool in "${selected_tools_arr[@]}"; do
     codex)
       INSTALL_BASE_DIR="$HOME/.codex"
       SKILL_INSTALL_DIR="$HOME/.agents/skills"
+      RULES_FILE="AGENTS.md"
+      ;;
+    muse)
+      INSTALL_BASE_DIR="$HOME/.config/muse"
+      SKILL_INSTALL_DIR="$INSTALL_BASE_DIR/skills"
+      RULES_FILE="AGENTS.md"
+      ;;
+    opencode)
+      INSTALL_BASE_DIR="$HOME/.config/opencode"
+      SKILL_INSTALL_DIR="$INSTALL_BASE_DIR/skills"
       RULES_FILE="AGENTS.md"
       ;;
     *)

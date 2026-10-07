@@ -20,7 +20,7 @@ cd vibe-frame-kit
 ### 2. 설치 스크립트 실행
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
+powershell -ExecutionPolicy Bypass -File .\install\install.ps1
 ```
 
 정상 설치되면 설치 완료 메시지가 출력되어야 합니다.
@@ -41,6 +41,7 @@ config
 prompts
 templates
 docs
+study
 ```
 
 ### 4. {{RULES_FILE}} 설치 확인
@@ -67,7 +68,7 @@ Get-Content -Encoding UTF8 {{INSTALL_PATH}}\{{RULES_FILE}} | Select-Object -Firs
 dir {{INSTALL_PATH}}\skills
 ```
 
-다음 14개 Skill 폴더가 보여야 합니다.
+다음 15개 Skill 폴더가 보여야 합니다.
 
 ```text
 ai-agent-workflow-builder
@@ -84,6 +85,7 @@ refactoring-coach
 requirements-definition
 security-checker
 test-planning-coach
+walkthrough
 ```
 
 개별 Skill 파일도 확인합니다.
@@ -139,8 +141,8 @@ Vibe Frame Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작�
 
 | 문제 | 점검 방법 |
 | --- | --- |
-| 스크립트 실행이 막힘 | `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1`로 실행했는지 확인합니다. |
-| `scripts\install.ps1`을 찾을 수 없음 | 현재 위치가 `vibe-frame-kit` 루트인지 확인합니다. |
+| 스크립트 실행이 막힘 | `powershell -ExecutionPolicy Bypass -File .\install\install.ps1`로 실행했는지 확인합니다. |
+| `install\install.ps1`을 찾을 수 없음 | 현재 위치가 `vibe-frame-kit` 루트인지 확인합니다. |
 | `{{INSTALL_PATH}}`에 파일이 없음 | 설치 중 오류 메시지를 확인하고 스크립트를 다시 실행합니다. |
 | 한글이 깨져 보임 | `Get-Content -Encoding UTF8`로 다시 확인합니다. |
 | 기존 `{{RULES_FILE}}`가 사라진 것 같음 | `{{RULES_FILE}}.backup.*` 파일이 생성되었는지 확인합니다. |
@@ -164,13 +166,13 @@ cd vibe-frame-kit
 먼저 실행 권한을 부여합니다.
 
 ```bash
-chmod +x scripts/install.sh
+chmod +x install/install.sh
 ```
 
 설치 스크립트를 실행합니다.
 
 ```bash
-./scripts/install.sh
+./install/install.sh
 ```
 
 정상 설치되면 설치 완료 메시지가 출력되어야 합니다.
@@ -191,6 +193,7 @@ config
 prompts
 templates
 docs
+study
 ```
 
 ### 4. {{RULES_FILE}} 설치 확인
@@ -217,7 +220,7 @@ head -n 5 {{INSTALL_PATH}}/{{RULES_FILE}}
 ls {{INSTALL_PATH}}/skills
 ```
 
-다음 14개 Skill 폴더가 보여야 합니다.
+다음 15개 Skill 폴더가 보여야 합니다.
 
 ```text
 ai-agent-workflow-builder
@@ -234,6 +237,7 @@ refactoring-coach
 requirements-definition
 security-checker
 test-planning-coach
+walkthrough
 ```
 
 개별 Skill 파일도 확인합니다.
@@ -289,8 +293,8 @@ Vibe Frame Kit의 개발 흐름에 따라 요구사항 정의서 초안을 작�
 
 | 문제 | 점검 방법 |
 | --- | --- |
-| `Permission denied`가 발생함 | `chmod +x scripts/install.sh`를 실행했는지 확인합니다. |
-| `scripts/install.sh`를 찾을 수 없음 | 현재 위치가 `vibe-frame-kit` 루트인지 확인합니다. |
+| `Permission denied`가 발생함 | `chmod +x install/install.sh`를 실행했는지 확인합니다. |
+| `install/install.sh`를 찾을 수 없음 | 현재 위치가 `vibe-frame-kit` 루트인지 확인합니다. |
 | `{{INSTALL_PATH}}`에 파일이 없음 | 설치 중 오류 메시지를 확인하고 스크립트를 다시 실행합니다. |
 | 기존 `{{RULES_FILE}}`가 사라진 것 같음 | `ls {{INSTALL_PATH}}/{{RULES_FILE}}.backup.*`로 백업 파일을 확인합니다. |
 | Skill 폴더가 일부 없음 | 저장소가 최신인지 확인하고 다시 clone합니다. |

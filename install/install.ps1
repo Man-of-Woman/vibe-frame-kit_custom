@@ -3,9 +3,6 @@ param(
     [string[]]$Tool,
 
     [Parameter(Mandatory=$false)]
-    [string]$GitUrl,
-    
-    [Parameter(Mandatory=$false)]
     [switch]$Interactive
 )
 
@@ -26,12 +23,6 @@ function Write-Success {
 function Write-Fail {
     param([string]$Message)
     Write-Host "[ERROR] $Message" -ForegroundColor Red
-}
-
-function Test-GitUrlFormat {
-    param([string]$Value)
-    if ([string]::IsNullOrWhiteSpace($Value)) { return $false }
-    return $Value -match '^(https://|git@|ssh://).+'
 }
 
 function Safe-BackupDirectory {
@@ -108,6 +99,9 @@ function Safe-CopyAndReplaceDirectory {
                     $Content = Get-Content -Path $Item.FullName -Raw -Encoding UTF8
                     foreach ($Key in $Mappings.Keys) {
                         $Content = $Content.Replace($Key, $Mappings[$Key])
+                    }
+                    if ([string]::IsNullOrWhiteSpace($Mappings["{{GIT_REMOTE_URL}}"]) -and $Extension -eq ".toml") {
+                        $Content = $Content.Replace("auto_commit_push = true", "auto_commit_push = false")
                     }
                     $ParentDir = Split-Path -Parent $DestinationPath
                     if (-not (Test-Path $ParentDir)) {
@@ -254,6 +248,8 @@ try {
         $Options.Add(@{ Name = "Gemini (Antigravity)"; Value = "gemini"; Selected = $false })
         $Options.Add(@{ Name = "Claude (Desktop / Code CLI)"; Value = "claude"; Selected = $false })
         $Options.Add(@{ Name = "Codex (Cursor, etc.)"; Value = "codex"; Selected = $false })
+        $Options.Add(@{ Name = "Muse (Muse Spark / Muse Code CLI)"; Value = "muse"; Selected = $false })
+        $Options.Add(@{ Name = "OpenCode"; Value = "opencode"; Selected = $false })
 
         while ($true) {
             Show-MultiSelectMenu -Title "Select AI development tool environment(s) to install" -Options $Options
@@ -276,8 +272,8 @@ try {
         
         # Validate tools
         foreach ($T in $ParsedTools) {
-            if ($T -notin @("gemini", "claude", "codex")) {
-                throw "Invalid tool: $T. Valid tools are: gemini, claude, codex"
+            if ($T -notin @("gemini", "claude", "codex", "muse", "opencode")) {
+                throw "Invalid tool: $T. Valid tools are: gemini, claude, codex, muse, opencode"
             }
             $SelectedTools += $T
         }
@@ -286,81 +282,6 @@ try {
     $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
     $RepoRoot = Resolve-Path (Join-Path $ScriptDir "..")
     $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-
-    if ([string]::IsNullOrWhiteSpace($GitUrl)) {
-        $GitUrl = Read-Host "Enter your project Git remote URL (Optional, press Enter to skip)"
-        if (-not [string]::IsNullOrWhiteSpace($GitUrl) -and -not (Test-GitUrlFormat $GitUrl)) {
-            do {
-                Write-Fail "Invalid Git URL format. Enter a valid URL or press Enter to skip."
-                $GitUrl = Read-Host "Enter your project Git remote URL (Optional)"
-            } while (-not [string]::IsNullOrWhiteSpace($GitUrl) -and -not (Test-GitUrlFormat $GitUrl))
-        }
-    }
-    elseif (-not [string]::IsNullOrWhiteSpace($GitUrl) -and -not (Test-GitUrlFormat $GitUrl)) {
-        throw "Invalid Git remote URL format. Supported formats: https://..., git@..., ssh://..."
-    }
-
-    # Project folder setup logic
-    $SpecifyFolder = ""
-    while ($SpecifyFolder -ne "Y" -and $SpecifyFolder -ne "N") {
-        $SpecifyFolder = (Read-Host "Do you want to specify a project folder to automatically deploy config.toml? (Y/N)").ToUpper()
-    }
-
-    $ProjFolder = ""
-    $ProjName = ""
-    $DeployConfigDirectly = $false
-
-    if ($SpecifyFolder -eq "Y") {
-        while ([string]::IsNullOrWhiteSpace($ProjFolder)) {
-            $ProjFolder = Read-Host "Enter the project folder path (e.g. C:\workspace\my-project)"
-        }
-        
-        # Resolve path to absolute
-        $ProjFolder = [System.IO.Path]::GetFullPath($ProjFolder)
-
-        if (-not (Test-Path $ProjFolder)) {
-            New-Item -ItemType Directory -Path $ProjFolder -Force | Out-Null
-            Write-Success "Created project folder: $ProjFolder"
-        }
-
-        $DefaultProjName = Split-Path $ProjFolder -Leaf
-        $ProjName = Read-Host "Enter the project name [Default: $DefaultProjName]"
-        if ([string]::IsNullOrWhiteSpace($ProjName)) {
-            $ProjName = $DefaultProjName
-        }
-        $DeployConfigDirectly = $true
-        
-        # Git remote URL과 프로젝트 폴더 동기화
-        if (-not [string]::IsNullOrWhiteSpace($GitUrl)) {
-            Write-Info "Synchronizing project folder with Git remote URL: $GitUrl"
-            if (Test-Path (Join-Path $ProjFolder ".git")) {
-                Write-Info "Existing Git repository found. Updating remote URL."
-                git -C $ProjFolder remote set-url origin $GitUrl 2>$null
-                if ($LASTEXITCODE -ne 0) {
-                    git -C $ProjFolder remote add origin $GitUrl 2>$null
-                }
-                Write-Info "Fetching from remote..."
-                git -C $ProjFolder fetch --all
-            } else {
-                $IsEmpty = (Get-ChildItem -Path $ProjFolder -Force | Measure-Object).Count -eq 0
-                if ($IsEmpty) {
-                    Write-Info "Folder is empty. Performing Git clone..."
-                    git clone $GitUrl $ProjFolder
-                    if ($LASTEXITCODE -ne 0) {
-                        Write-Fail "Git clone failed. Proceeding with configuration deployment anyway."
-                    } else {
-                        Write-Success "Successfully cloned repository."
-                    }
-                } else {
-                    Write-Info "Folder is not empty. Initializing Git repository locally..."
-                    git -C $ProjFolder init
-                    git -C $ProjFolder remote add origin $GitUrl 2>$null
-                    git -C $ProjFolder fetch origin
-                    Write-Success "Initialized Git and added remote."
-                }
-            }
-        }
-    }
 
     # Deploy ignore files at repository root once
     Deploy-IgnoreFiles -RepoRoot $RepoRoot
@@ -395,14 +316,30 @@ try {
                 $Mappings["{{CONFIG_FILE}}"] = "codex.config.sample.toml"
                 $Mappings["{{RULES_FILE}}"] = "AGENTS.md"
             }
+            "muse" {
+                $InstallBaseDir = Join-Path $HOME ".config/muse"
+                $SkillInstallDir = Join-Path $InstallBaseDir "skills"
+                $Mappings["{{AGENT_NAME}}"] = "Muse"
+                $Mappings["{{INSTALL_PATH}}"] = "~/.config/muse"
+                $Mappings["{{CONFIG_FILE}}"] = "muse.config.sample.toml"
+                $Mappings["{{RULES_FILE}}"] = "AGENTS.md"
+            }
+            "opencode" {
+                $InstallBaseDir = Join-Path $HOME ".config/opencode"
+                $SkillInstallDir = Join-Path $InstallBaseDir "skills"
+                $Mappings["{{AGENT_NAME}}"] = "OpenCode"
+                $Mappings["{{INSTALL_PATH}}"] = "~/.config/opencode"
+                $Mappings["{{CONFIG_FILE}}"] = "opencode.config.sample.toml"
+                $Mappings["{{RULES_FILE}}"] = "AGENTS.md"
+            }
         }
 
-        $Mappings["{{GIT_REMOTE_URL}}"] = $GitUrl
+        # Git remote URL은 설치 시 지정하지 않는다. 필요하면 프로젝트의 config.toml에서 직접 설정한다.
+        $Mappings["{{GIT_REMOTE_URL}}"] = ""
 
         Write-Info "Installing vibe-frame-kit for $($Mappings['{{AGENT_NAME}}'])."
         Write-Info "Repository location: $RepoRoot"
         Write-Info "Target path: $InstallBaseDir"
-        Write-Info "Project Git remote URL: $GitUrl"
 
         if (-not (Test-Path $InstallBaseDir)) {
             New-Item -ItemType Directory -Path $InstallBaseDir -Force | Out-Null
@@ -474,61 +411,15 @@ try {
         }
         Write-Success "Verified walkthrough skill installation: $InstalledWalkthroughSkill"
 
-        # Generate config.toml in project folder if requested
-        if ($DeployConfigDirectly) {
-            # Deploy rules file to valid location in the project folder
-            # For Gemini (antigravity), the valid rules location is $ProjFolder/.agents/AGENTS.md
-            # For Claude, the valid rules location is $ProjFolder/CLAUDE.md
-            # For Codex, the valid rules location is $ProjFolder/AGENTS.md
-            $ProjectRulesRelativePath = ""
-            switch ($CurrentTool) {
-                "gemini" {
-                    $ProjectRulesRelativePath = ".agents/AGENTS.md"
-                }
-                "claude" {
-                    $ProjectRulesRelativePath = "CLAUDE.md"
-                }
-                "codex" {
-                    $ProjectRulesRelativePath = "AGENTS.md"
-                }
+        # Muse (Muse Code CLI): ensure settings.json exists with schema_version = 1 (never overwrite existing MCP settings)
+        if ($CurrentTool -eq "muse") {
+            $MuseSettingsPath = Join-Path $InstallBaseDir "settings.json"
+            if (-not (Test-Path $MuseSettingsPath)) {
+                Set-Content -Path $MuseSettingsPath -Value '{ "schema_version": 1 }' -Encoding UTF8
+                Write-Success "Created Muse settings.json with schema_version 1."
             }
-            if (-not [string]::IsNullOrEmpty($ProjectRulesRelativePath)) {
-                $SourceRulesFile = Join-Path $SourceCommonDir "AGENTS.md"
-                $TargetProjectRulesPath = Join-Path $ProjFolder $ProjectRulesRelativePath
-                if (Test-Path $SourceRulesFile) {
-                    $RulesContent = Get-Content -Path $SourceRulesFile -Raw -Encoding UTF8
-                    foreach ($Key in $Mappings.Keys) {
-                        $RulesContent = $RulesContent.Replace($Key, $Mappings[$Key])
-                    }
-                    $ProjectRulesParentDir = Split-Path -Parent $TargetProjectRulesPath
-                    if (-not (Test-Path $ProjectRulesParentDir)) {
-                        New-Item -ItemType Directory -Path $ProjectRulesParentDir -Force | Out-Null
-                    }
-                    Set-Content -Path $TargetProjectRulesPath -Value $RulesContent -Encoding UTF8
-                    Write-Success "Automatically deployed rules file to project folder: $TargetProjectRulesPath"
-                }
-            }
-
-            $SampleConfigFile = Join-Path $SourceCommonDir "config\common.config.sample.toml"
-            $TargetConfigPath = Join-Path $ProjFolder "config.toml"
-            if (Test-Path $SampleConfigFile) {
-                $ConfigContent = Get-Content -Path $SampleConfigFile -Raw -Encoding UTF8
-                
-                # Substitutions
-                $ConfigContent = $ConfigContent.Replace('name = "my-ai-service-project"', "name = `"$ProjName`"")
-                $ConfigContent = $ConfigContent.Replace("{{AGENT_NAME}}", $Mappings["{{AGENT_NAME}}"])
-                $ConfigContent = $ConfigContent.Replace("{{INSTALL_PATH}}", $Mappings["{{INSTALL_PATH}}"])
-                $ConfigContent = $ConfigContent.Replace("{{CONFIG_FILE}}", "config.toml")
-                $ConfigContent = $ConfigContent.Replace("{{RULES_FILE}}", $Mappings["{{RULES_FILE}}"])
-                $ConfigContent = $ConfigContent.Replace("{{GIT_REMOTE_URL}}", $GitUrl)
-                if ([string]::IsNullOrWhiteSpace($GitUrl)) {
-                    $ConfigContent = $ConfigContent.Replace("auto_commit_push = true", "auto_commit_push = false")
-                }
-
-                Set-Content -Path $TargetConfigPath -Value $ConfigContent -Encoding UTF8
-                Write-Success "Automatically created config.toml in project folder: $TargetConfigPath"
-            } else {
-                Write-Fail "Sample config file not found, failed to auto-create config.toml."
+            else {
+                Write-Info "Muse settings.json already exists. Kept as-is (requires schema_version 1)."
             }
         }
 
@@ -549,21 +440,13 @@ try {
         Write-Host "=============================================" -ForegroundColor Yellow
         Write-Host " [Action Required: Setup Configuration]" -ForegroundColor Yellow
         Write-Host "=============================================" -ForegroundColor Yellow
-        if ($DeployConfigDirectly) {
-            Write-Host " 1. Configuration file successfully created:" -ForegroundColor Cyan
-            Write-Host "    $ProjFolder\config.toml" -ForegroundColor White
-            Write-Host " 2. Status:" -ForegroundColor Cyan
-            Write-Host "    No further action needed! The Agent will now read settings from this file." -ForegroundColor White
-        } else {
-            Write-Host " 1. Sample TOML file location:" -ForegroundColor Cyan
-            Write-Host "    $($Mappings['{{INSTALL_PATH}}'])/config/$($Mappings['{{CONFIG_FILE}}'])" -ForegroundColor White
-            Write-Host " 2. How to activate:" -ForegroundColor Cyan
-            Write-Host "    - Copy the sample file above to your 'Project Root Folder'." -ForegroundColor White
-            Write-Host "    - Rename the file to 'config.toml' to apply settings to the Agent." -ForegroundColor White
-            Write-Host "      (e.g., $($Mappings['{{CONFIG_FILE}}']) -> config.toml)" -ForegroundColor Gray
-        }
-        Write-Host " 3. Git remote URL injected:" -ForegroundColor Cyan
-        Write-Host "    $GitUrl" -ForegroundColor White
+        Write-Host " 1. Sample TOML file location:" -ForegroundColor Cyan
+        Write-Host "    $($Mappings['{{INSTALL_PATH}}'])/config/$($Mappings['{{CONFIG_FILE}}'])" -ForegroundColor White
+        Write-Host " 2. How to activate:" -ForegroundColor Cyan
+        Write-Host "    - Copy the sample file above to your 'Project Root Folder'." -ForegroundColor White
+        Write-Host "    - Rename the file to 'config.toml' to apply settings to the Agent." -ForegroundColor White
+        Write-Host "      (e.g., $($Mappings['{{CONFIG_FILE}}']) -> config.toml)" -ForegroundColor Gray
+        Write-Host "    - Fill in remote_repository_url and set auto_commit_push in your project config.toml manually." -ForegroundColor White
         Write-Host "=============================================" -ForegroundColor Yellow
     }
 }

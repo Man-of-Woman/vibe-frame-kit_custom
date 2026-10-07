@@ -106,6 +106,8 @@ try {
     if (Test-Path (Join-Path $HOME ".gemini\config\AGENTS.md")) { $InstalledTools += "gemini" }
     if (Test-Path (Join-Path $HOME ".claude\CLAUDE.md")) { $InstalledTools += "claude" }
     if (Test-Path (Join-Path $HOME ".codex\AGENTS.md")) { $InstalledTools += "codex" }
+    if (Test-Path (Join-Path $HOME ".config\muse\AGENTS.md")) { $InstalledTools += "muse" }
+    if (Test-Path (Join-Path $HOME ".config\opencode\AGENTS.md")) { $InstalledTools += "opencode" }
 
     $SelectedTools = @()
     if ($null -eq $Tool -or $Tool.Count -eq 0) {
@@ -134,6 +136,8 @@ try {
                     "gemini" { "Gemini (Antigravity)" }
                     "claude" { "Claude (Desktop / Code CLI)" }
                     "codex" { "Codex (Cursor, etc.)" }
+                    "muse" { "Muse (Muse Spark / Muse Code CLI)" }
+                    "opencode" { "OpenCode" }
                 }
                 $Options.Add(@{ Name = $Name; Value = $T; Selected = $false })
             }
@@ -160,8 +164,8 @@ try {
         
         # Validate tools
         foreach ($T in $ParsedTools) {
-            if ($T -notin @("gemini", "claude", "codex")) {
-                throw "Invalid tool: $T. Valid tools are: gemini, claude, codex"
+            if ($T -notin @("gemini", "claude", "codex", "muse", "opencode")) {
+                throw "Invalid tool: $T. Valid tools are: gemini, claude, codex, muse, opencode"
             }
             $SelectedTools += $T
         }
@@ -185,6 +189,16 @@ try {
             "codex" {
                 $InstallBaseDir = Join-Path $HOME ".codex"
                 $SkillInstallDir = Join-Path $HOME ".agents\skills"
+                $RulesFile = "AGENTS.md"
+            }
+            "muse" {
+                $InstallBaseDir = Join-Path $HOME ".config/muse"
+                $SkillInstallDir = Join-Path $InstallBaseDir "skills"
+                $RulesFile = "AGENTS.md"
+            }
+            "opencode" {
+                $InstallBaseDir = Join-Path $HOME ".config/opencode"
+                $SkillInstallDir = Join-Path $InstallBaseDir "skills"
                 $RulesFile = "AGENTS.md"
             }
         }

@@ -17,9 +17,11 @@
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool codex
 powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1 -Tool codex
+powershell -ExecutionPolicy Bypass -File .\install\install.ps1 -Tool muse
+powershell -ExecutionPolicy Bypass -File .\install\uninstall.ps1 -Tool muse
 ```
 
-macOS/Linux에서는 먼저 `chmod +x install/install.sh install/uninstall.sh`를 실행한 뒤, `./install/install.sh -t codex` 및 `./install/uninstall.sh -t codex`를 사용합니다. 에이전트 파일, 스킬, 프롬프트, 설정이 설치되며 제거 시 관리 대상 파일만 삭제되는지 확인합니다.
+macOS/Linux에서는 먼저 `chmod +x install/install.sh install/uninstall.sh`를 실행한 뒤, `./install/install.sh -t codex` 및 `./install/uninstall.sh -t codex`를 사용합니다. Muse 지원 변경 시에는 `-t muse`로 동일하게 검증합니다. 에이전트 파일, 스킬, 프롬프트, 설정이 설치되며 제거 시 관리 대상 파일만 삭제되는지 확인합니다. 단, Muse의 `settings.json`(인증/MCP 설정)은 제거 대상이 아니므로 유지되는지 확인합니다.
 
 ## 코드 스타일과 이름 규칙
 

@@ -9,6 +9,12 @@ name = "my-ai-service-project"
 language = "ko"
 description = "{{AGENT_NAME}}를 활용한 AI 서비스 개발 프로젝트"
 
+[agent]
+name = "{{AGENT_NAME}}"
+install_path = "{{INSTALL_PATH}}"
+rules_file = "{{RULES_FILE}}"
+config_file = "{{CONFIG_FILE}}"
+
 [workflow]
 # 기본 개발 흐름:
 # requirements -> function_breakdown -> mvp_planning -> structure -> build -> debug -> test -> refactor -> docs
@@ -34,6 +40,7 @@ security = "security-checker"
 domain_modeling = "domain-model-builder"
 backlog_planning = "backlog-planning"
 context_mapping = "context-map-builder"
+test_planning = "test-planning-coach"
 walkthrough = "walkthrough"
 
 
@@ -94,7 +101,7 @@ enable_generation = true
 enable_metadata_logging = true
 
 [git]
-# 작업 대상 원격 저장소 주소입니다. 설치 시 입력한 값을 기준으로 채워지며, git push 유도/검증의 기준으로 사용합니다.
+# 작업 대상 원격 저장소 주소입니다. 프로젝트별로 직접 기재하며, git push 유도/검증의 기준으로 사용합니다.
 remote_repository_url = "{{GIT_REMOTE_URL}}"
 # 작업 완료 및 승인 후 자동으로 git add, commit, push 명령어를 가이드하거나 수행하도록 유도합니다. (true/false)
 auto_commit_push = true

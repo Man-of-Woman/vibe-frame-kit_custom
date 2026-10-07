@@ -15,7 +15,7 @@
 | 구분 | 기술 스택 | 도입 목적 및 역할 |
 | --- | --- | --- |
 | **Backend** | FastAPI | 비동기 지원을 통한 빠른 API 구현, Swagger UI 자동 생성 기능 활용 |
-| **AI Integration** | Gemini API | 다중 모달 데이터 분석 및 텍스트 요약/구조화 작업 수행 |
+| **AI Integration** | {{AGENT_NAME}} API (OpenAI, Gemini, Claude, Muse 등) | 텍스트 요약/구조화 및 다중 모달 데이터 분석 작업 수행 |
 | **Agent / State** | LangGraph | 순환 루프(Validator 피드백 등) 및 멀티 에이전트 상태 전이 제어 |
 
 ---

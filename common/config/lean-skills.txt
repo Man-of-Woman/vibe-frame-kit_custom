@@ -16,5 +16,6 @@ security-checker
 domain-model-builder
 backlog-planning
 context-map-builder
+test-planning-coach
 walkthrough
 

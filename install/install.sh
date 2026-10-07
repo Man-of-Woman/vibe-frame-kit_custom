@@ -3,7 +3,7 @@
 # vibe-frame-kit 통합 Bash 설치 스크립트
 #
 # Usage:
-#   ./install.sh -t <gemini|claude|codex> -g <git_remote_url>
+#   ./install.sh -t <gemini|claude|codex|muse|opencode>
 #   ./install.sh (대화식 선택)
 
 set -euo pipefail
@@ -18,11 +18,6 @@ success() {
 
 fail() {
   printf '\033[31m[ERROR]\033[0m %s\n' "$1"
-}
-
-is_valid_git_url() {
-  local value="$1"
-  [[ -n "$value" && "$value" =~ ^(https://|git@|ssh://).+ ]]
 }
 
 on_error() {
@@ -56,6 +51,8 @@ try:
         ('{{GIT_REMOTE_URL}}', '$GIT_URL')
     ]:
         content = content.replace(k, v)
+    if not '$GIT_URL':
+        content = content.replace('auto_commit_push = true', 'auto_commit_push = false')
     with open('$dest_file', 'w', encoding='utf-8') as f:
         f.write(content)
 except Exception as e:
@@ -69,12 +66,18 @@ except Exception as e:
       sed -i '' "s/{{CONFIG_FILE}}/$CONFIG_FILE/g" "$dest_file"
       sed -i '' "s/{{RULES_FILE}}/$RULES_FILE/g" "$dest_file"
       sed -i '' "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$dest_file"
+      if [ -z "$GIT_URL" ]; then
+        sed -i '' "s/auto_commit_push = true/auto_commit_push = false/g" "$dest_file"
+      fi
     else
       sed -i "s/{{AGENT_NAME}}/$AGENT_NAME/g" "$dest_file"
       sed -i "s|{{INSTALL_PATH}}|$INSTALL_PATH|g" "$dest_file"
       sed -i "s/{{CONFIG_FILE}}/$CONFIG_FILE/g" "$dest_file"
       sed -i "s/{{RULES_FILE}}/$RULES_FILE/g" "$dest_file"
       sed -i "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$dest_file"
+      if [ -z "$GIT_URL" ]; then
+        sed -i "s/auto_commit_push = true/auto_commit_push = false/g" "$dest_file"
+      fi
     fi
   fi
 }
@@ -204,10 +207,10 @@ show_multi_select_menu() {
     done
     printf "\n"
 
-    # read key input
-    read -rsn1 key
+    # read key input (read 실패/EOF·타임아웃은 메뉴 루프 보호를 위해 무시)
+    read -rsn1 key || true
     if [[ "$key" == $'\x1b' ]]; then
-      read -rsn2 -t 0.1 key
+      read -rsn2 -t 0.1 key || true
       if [[ "$key" == "[A" ]]; then # Up
         selected_index=$(( (selected_index - 1 + num_options) % num_options ))
       elif [[ "$key" == "[B" ]]; then # Down
@@ -241,13 +244,13 @@ show_multi_select_menu() {
 
 
 TOOL=""
+# Git remote URL은 설치 시 지정하지 않는다. 필요하면 프로젝트의 config.toml에서 직접 설정한다.
 GIT_URL=""
 
-# 파라미터 처리 (-t <tool1,tool2>, -g <git_remote_url>)
-while getopts "t:g:" opt; do
+# 파라미터 처리 (-t <tool1,tool2>)
+while getopts "t:" opt; do
   case $opt in
     t) TOOL="$OPTARG" ;;
-    g) GIT_URL="$OPTARG" ;;
     *) fail "잘못된 옵션입니다." ; exit 1 ;;
   esac
 done
@@ -258,6 +261,8 @@ if [ -z "$TOOL" ]; then
     "Gemini (Antigravity):gemini:false"
     "Claude (Desktop / Code CLI):claude:false"
     "Codex (Cursor 등):codex:false"
+    "Muse (Muse Spark / Muse Code CLI):muse:false"
+    "OpenCode:opencode:false"
   )
   while true; do
     TOOL=$(show_multi_select_menu "설치할 AI 개발 툴 환경을 선택하세요 (복수 선택 가능)" "${options[@]}")
@@ -271,82 +276,6 @@ if [ -z "$TOOL" ]; then
 fi
 
 IFS=',' read -r -a selected_tools_arr <<< "$TOOL"
-
-if [ -z "$GIT_URL" ]; then
-  read -rp "프로젝트 Git 원격 저장소 주소를 입력하세요 (선택사항, 건너뛰려면 Enter): " GIT_URL
-  GIT_URL=$(echo "$GIT_URL" | tr -d '\r')
-  if [ -n "$GIT_URL" ] && ! is_valid_git_url "$GIT_URL"; then
-    while true; do
-      fail "유효하지 않은 Git 주소 형식입니다. 올바른 주소를 입력하거나 건너뛰려면 Enter를 누르세요."
-      read -rp "프로젝트 Git 원격 저장소 주소를 입력하세요 (Optional): " GIT_URL
-      GIT_URL=$(echo "$GIT_URL" | tr -d '\r')
-      if [ -z "$GIT_URL" ] || is_valid_git_url "$GIT_URL"; then
-        break
-      fi
-    done
-  fi
-elif ! is_valid_git_url "$GIT_URL"; then
-  fail "유효한 Git 원격 저장소 주소 형식이 아닙니다. 지원 형식: https://..., git@..., ssh://..."
-  exit 1
-fi
-
-# 프로젝트 폴더 설정 로직
-SPECIFY_FOLDER=""
-while [[ "$SPECIFY_FOLDER" != "Y" && "$SPECIFY_FOLDER" != "N" ]]; do
-  read -rp "프로젝트 폴더를 지정하여 config.toml을 바로 배포하시겠습니까? (Y/N): " SPECIFY_FOLDER
-  SPECIFY_FOLDER=$(echo "$SPECIFY_FOLDER" | tr -d '\r' | tr '[:lower:]' '[:upper:]')
-done
-
-PROJ_FOLDER=""
-PROJ_NAME=""
-DEPLOY_CONFIG_DIRECTLY=false
-
-if [ "$SPECIFY_FOLDER" = "Y" ]; then
-  while [ -z "$PROJ_FOLDER" ]; do
-    read -rp "프로젝트 폴더 경로를 입력하세요 (예: /workspace/my-project): " PROJ_FOLDER
-    PROJ_FOLDER=$(echo "$PROJ_FOLDER" | tr -d '\r')
-  done
-
-  # 절대경로 획득
-  if [[ "$PROJ_FOLDER" != /* ]]; then
-    PROJ_FOLDER="$(pwd)/$PROJ_FOLDER"
-  fi
-
-  if [ ! -d "$PROJ_FOLDER" ]; then
-    mkdir -p "$PROJ_FOLDER"
-    success "프로젝트 폴더를 생성했습니다: $PROJ_FOLDER"
-  fi
-
-  DEFAULT_PROJ_NAME=$(basename "$PROJ_FOLDER")
-  read -rp "프로젝트 이름을 입력하세요 [기본값: $DEFAULT_PROJ_NAME]: " PROJ_NAME
-  PROJ_NAME=$(echo "$PROJ_NAME" | tr -d '\r')
-  if [ -z "$PROJ_NAME" ]; then
-    PROJ_NAME="$DEFAULT_PROJ_NAME"
-  fi
-  DEPLOY_CONFIG_DIRECTLY=true
-  
-  # Git remote URL과 프로젝트 폴더 동기화
-  if [ -n "$GIT_URL" ]; then
-    info "프로젝트 폴더와 Git 원격 저장소 동기화 중: $GIT_URL"
-    if [ -d "$PROJ_FOLDER/.git" ]; then
-      info "기존 Git 저장소가 존재합니다. 원격 저장소 URL을 업데이트합니다."
-      git -C "$PROJ_FOLDER" remote set-url origin "$GIT_URL" 2>/dev/null || git -C "$PROJ_FOLDER" remote add origin "$GIT_URL" 2>/dev/null
-      info "원격 저장소로부터 변경 사항을 가져오는 중..."
-      git -C "$PROJ_FOLDER" fetch --all
-    else
-      if [ -z "$(ls -A "$PROJ_FOLDER")" ]; then
-        info "폴더가 비어 있습니다. Git clone을 수행합니다..."
-        git clone "$GIT_URL" "$PROJ_FOLDER" || fail "Git clone에 실패했습니다. 설정 파일 배포는 계속 진행합니다."
-      else
-        info "폴더가 비어 있지 않습니다. 로컬 Git 저장소를 초기화합니다..."
-        git -C "$PROJ_FOLDER" init
-        git -C "$PROJ_FOLDER" remote add origin "$GIT_URL" 2>/dev/null
-        git -C "$PROJ_FOLDER" fetch origin
-        success "Git 저장소를 초기화하고 원격을 추가했습니다."
-      fi
-    fi
-  fi
-fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -383,6 +312,22 @@ for current_tool in "${selected_tools_arr[@]}"; do
       CONFIG_FILE="codex.config.sample.toml"
       RULES_FILE="AGENTS.md"
       ;;
+    muse)
+      INSTALL_BASE_DIR="$HOME/.config/muse"
+      SKILL_INSTALL_DIR="$INSTALL_BASE_DIR/skills"
+      AGENT_NAME="Muse"
+      INSTALL_PATH="~/.config/muse"
+      CONFIG_FILE="muse.config.sample.toml"
+      RULES_FILE="AGENTS.md"
+      ;;
+    opencode)
+      INSTALL_BASE_DIR="$HOME/.config/opencode"
+      SKILL_INSTALL_DIR="$INSTALL_BASE_DIR/skills"
+      AGENT_NAME="OpenCode"
+      INSTALL_PATH="~/.config/opencode"
+      CONFIG_FILE="opencode.config.sample.toml"
+      RULES_FILE="AGENTS.md"
+      ;;
     *)
       fail "지원하지 않는 툴 유형입니다: $current_tool"
       exit 1
@@ -392,7 +337,6 @@ for current_tool in "${selected_tools_arr[@]}"; do
   info "vibe-frame-kit ($AGENT_NAME 환경) 설치를 시작합니다."
   info "저장소 위치: $REPO_ROOT"
   info "설치 위치: $INSTALL_BASE_DIR"
-  info "프로젝트 Git 원격 저장소 주소: $GIT_URL"
   mkdir -p "$INSTALL_BASE_DIR"
 
   SOURCE_COMMON_DIR="$REPO_ROOT/common"
@@ -453,83 +397,14 @@ for current_tool in "${selected_tools_arr[@]}"; do
   fi
   success "walkthrough 스킬 설치를 확인했습니다: $INSTALLED_WALKTHROUGH_SKILL"
 
-  # config.toml 파일 직접 배포
-  if [ "$DEPLOY_CONFIG_DIRECTLY" = true ]; then
-    # 지정 프로젝트 폴더의 유효한 위치에 규칙 파일 배포
-    local project_rules_rel_path=""
-    case "$CurrentTool" in
-      "gemini")
-        project_rules_rel_path=".agents/AGENTS.md"
-        ;;
-      "claude")
-        project_rules_rel_path="CLAUDE.md"
-        ;;
-      "codex")
-        project_rules_rel_path="AGENTS.md"
-        ;;
-    esac
-
-    if [ -n "$project_rules_rel_path" ]; then
-      local source_rules_file="$SOURCE_COMMON_DIR/AGENTS.md"
-      local target_project_rules_path="$PROJ_FOLDER/$project_rules_rel_path"
-      if [ -f "$source_rules_file" ]; then
-        local project_rules_parent
-        project_rules_parent="$(dirname "$target_project_rules_path")"
-        mkdir -p "$project_rules_parent"
-        replace_variables "$source_rules_file" "$target_project_rules_path"
-        success "프로젝트 폴더 내에 규칙 파일을 자동 생성했습니다: $target_project_rules_path"
-      fi
-    fi
-
-    SAMPLE_CONFIG_FILE="$SOURCE_COMMON_DIR/config/common.config.sample.toml"
-    TARGET_CONFIG_PATH="$PROJ_FOLDER/config.toml"
-    if [ -f "$SAMPLE_CONFIG_FILE" ]; then
-      cp "$SAMPLE_CONFIG_FILE" "$TARGET_CONFIG_PATH"
-      if command -v python3 &>/dev/null; then
-        python3 -c "
-try:
-    with open('$TARGET_CONFIG_PATH', 'r', encoding='utf-8', errors='ignore') as f:
-        content = f.read()
-    content = content.replace('name = \"my-ai-service-project\"', 'name = \"$PROJ_NAME\"')
-    content = content.replace('{{AGENT_NAME}}', '$AGENT_NAME')
-    content = content.replace('{{INSTALL_PATH}}', '$INSTALL_PATH')
-    content = content.replace('{{CONFIG_FILE}}', 'config.toml')
-    content = content.replace('{{RULES_FILE}}', '$RULES_FILE')
-    content = content.replace('{{GIT_REMOTE_URL}}', '$GIT_URL')
-    if not '$GIT_URL':
-        content = content.replace('auto_commit_push = true', 'auto_commit_push = false')
-    with open('$TARGET_CONFIG_PATH', 'w', encoding='utf-8') as f:
-        f.write(content)
-except Exception as e:
-    import sys
-    sys.exit(1)
-"
-      else
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-          sed -i '' "s/name = \"my-ai-service-project\"/name = \"$PROJ_NAME\"/g" "$TARGET_CONFIG_PATH"
-          sed -i '' "s/{{AGENT_NAME}}/$AGENT_NAME/g" "$TARGET_CONFIG_PATH"
-          sed -i '' "s|{{INSTALL_PATH}}|$INSTALL_PATH|g" "$TARGET_CONFIG_PATH"
-          sed -i '' "s/{{CONFIG_FILE}}/config.toml/g" "$TARGET_CONFIG_PATH"
-          sed -i '' "s/{{RULES_FILE}}/$RULES_FILE/g" "$TARGET_CONFIG_PATH"
-          sed -i '' "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$TARGET_CONFIG_PATH"
-          if [ -z "$GIT_URL" ]; then
-            sed -i '' "s/auto_commit_push = true/auto_commit_push = false/g" "$TARGET_CONFIG_PATH"
-          fi
-        else
-          sed -i "s/name = \"my-ai-service-project\"/name = \"$PROJ_NAME\"/g" "$TARGET_CONFIG_PATH"
-          sed -i "s/{{AGENT_NAME}}/$AGENT_NAME/g" "$TARGET_CONFIG_PATH"
-          sed -i "s|{{INSTALL_PATH}}|$INSTALL_PATH|g" "$TARGET_CONFIG_PATH"
-          sed -i "s/{{CONFIG_FILE}}/config.toml/g" "$TARGET_CONFIG_PATH"
-          sed -i "s/{{RULES_FILE}}/$RULES_FILE/g" "$TARGET_CONFIG_PATH"
-          sed -i "s|{{GIT_REMOTE_URL}}|$GIT_URL|g" "$TARGET_CONFIG_PATH"
-          if [ -z "$GIT_URL" ]; then
-            sed -i "s/auto_commit_push = true/auto_commit_push = false/g" "$TARGET_CONFIG_PATH"
-          fi
-        fi
-      fi
-      success "프로젝트 폴더 내에 config.toml을 자동 생성했습니다: $TARGET_CONFIG_PATH"
+  # Muse (Muse Code CLI): settings.json 보장 (schema_version=1, 기존 MCP 설정은 덮어쓰지 않음)
+  if [ "$current_tool" = "muse" ]; then
+    muse_settings_path="$INSTALL_BASE_DIR/settings.json"
+    if [ ! -f "$muse_settings_path" ]; then
+      printf '{ "schema_version": 1 }\n' > "$muse_settings_path"
+      success "Muse settings.json을 생성했습니다 (schema_version 1)."
     else
-      fail "샘플 설정 파일이 존재하지 않아 config.toml을 자동 생성하지 못했습니다."
+      info "Muse settings.json이 이미 존재합니다. 그대로 유지합니다 (schema_version 1 필요)."
     fi
   fi
 
@@ -550,21 +425,13 @@ except Exception as e:
   printf '\033[33m=============================================\033[0m\n'
   printf '\033[33m [Action Required: Setup Configuration]\033[0m\n'
   printf '\033[33m=============================================\033[0m\n'
-  if [ "$DEPLOY_CONFIG_DIRECTLY" = true ]; then
-    printf ' 1. Configuration file successfully created:\n'
-    printf '    %s/config.toml\n' "$PROJ_FOLDER"
-    printf ' 2. Status:\n'
-    printf '    No further action needed! The Agent will now read settings from this file.\n'
-  else
-    printf ' 1. Sample TOML file location:\n'
-    printf '    %s/config/%s\n' "$INSTALL_PATH" "$CONFIG_FILE"
-    printf ' 2. How to activate:\n'
-    printf '    - Copy the sample file above to your '\''Project Root Folder'\''\n'
-    printf '    - Rename the file to '\''config.toml'\'' to apply settings to the Agent.\n'
-    printf '      (e.g., %s -> config.toml)\n' "$CONFIG_FILE"
-  fi
-  printf ' 3. Git remote URL injected:\n'
-  printf '    %s\n' "$GIT_URL"
+  printf ' 1. Sample TOML file location:\n'
+  printf '    %s/config/%s\n' "$INSTALL_PATH" "$CONFIG_FILE"
+  printf ' 2. How to activate:\n'
+  printf '    - Copy the sample file above to your '\''Project Root Folder'\''\n'
+  printf '    - Rename the file to '\''config.toml'\'' to apply settings to the Agent.\n'
+  printf '      (e.g., %s -> config.toml)\n' "$CONFIG_FILE"
+  printf '    - Fill in remote_repository_url and set auto_commit_push in your project config.toml manually.\n'
   printf '\033[33m=============================================\033[0m\n'
   printf '\n'
 done
