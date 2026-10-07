@@ -18,7 +18,7 @@ Vibe Frame Kit는 AI 서비스 프로젝트를 진행할 때 공통 개발 흐�
 | `prompts/` | 수강생이 복사해서 사용할 수 있는 프롬프트 |
 | `templates/` | 요구사항 정의서, MVP 계획서, 보고서 등 제출용 양식 |
 | `config/` | Skill 목록과 샘플 설정 |
-| `scripts/` | 설치 스크립트 |
+| `install/` | 설치 스크립트 |
 
 ## 2. 설치 전 준비사항
 
@@ -58,7 +58,7 @@ Windows PowerShell에서 아래 명령을 실행합니다.
 powershell -ExecutionPolicy Bypass -File .\install\install.ps1
 ```
 
-설치 스크립트는 프로젝트의 Git 원격 저장소 주소를 필수로 입력받습니다. 입력한 주소는 이후 `config.toml`의 `[git].remote_repository_url` 기본값으로 반영됩니다.
+설치 스크립트는 Git 원격 저장소 주소를 입력받지 않습니다. `config.toml`의 `[git].remote_repository_url`은 프로젝트별로 직접 기재합니다.
 
 이 명령은 현재 Kit의 다음 항목을 사용자 폴더의 `{{INSTALL_PATH}}`로 복사합니다.
 

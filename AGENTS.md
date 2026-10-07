@@ -2,7 +2,7 @@
 
 ## 프로젝트 구조와 모듈 구성
 
-이 저장소는 Gemini, Claude, Codex용 AI 개발 워크플로 패키지이며, 일반적인 `src/` 기반 애플리케이션이 아닙니다. 도구와 무관하게 공통으로 쓰는 자료는 `common/`에 둡니다.
+이 저장소는 Gemini, Claude, Codex, Muse, OpenCode용 AI 개발 워크플로 패키지이며, 일반적인 `src/` 기반 애플리케이션이 아닙니다. 도구와 무관하게 공통으로 쓰는 자료는 `common/`에 둡니다.
 
 - `common/skills/`: 작업 단계별 `SKILL.md` 정의
 - `common/prompts/`, `common/templates/`, `common/study/`, `common/docs/`: 프롬프트, 산출물 양식, 학습 자료, 안내 문서

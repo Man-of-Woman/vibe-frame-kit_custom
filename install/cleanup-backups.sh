@@ -3,7 +3,7 @@
 # vibe-frame-kit 백업 파일/폴더 확인 및 승인 기반 정리 스크립트
 set -euo pipefail
 
-TOOLS=("gemini" "claude" "codex")
+TOOLS=("gemini" "claude" "codex" "muse" "opencode")
 if [ "$#" -gt 0 ]; then
   TOOLS=("$@")
 fi
@@ -14,6 +14,8 @@ for tool in "${TOOLS[@]}"; do
     gemini) backup_roots+=("$HOME/.gemini/config") ;;
     claude) backup_roots+=("$HOME/.claude") ;;
     codex) backup_roots+=("$HOME/.codex" "$HOME/.agents") ;;
+    muse) backup_roots+=("$HOME/.config/muse") ;;
+    opencode) backup_roots+=("$HOME/.config/opencode") ;;
     *)
       printf '[ERROR] 지원하지 않는 도구입니다: %s\n' "$tool" >&2
       exit 1

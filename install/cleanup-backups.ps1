@@ -1,6 +1,6 @@
 ﻿param(
     [Parameter(Mandatory = $false)]
-    [ValidateSet("gemini", "claude", "codex")]
+    [ValidateSet("gemini", "claude", "codex", "muse", "opencode")]
     [string[]]$Tool
 )
 
@@ -10,7 +10,7 @@ function Get-BackupRoots {
     param([string[]]$SelectedTools)
 
     $roots = [System.Collections.Generic.List[string]]::new()
-    $tools = if ($SelectedTools -and $SelectedTools.Count -gt 0) { $SelectedTools } else { @("gemini", "claude", "codex") }
+    $tools = if ($SelectedTools -and $SelectedTools.Count -gt 0) { $SelectedTools } else { @("gemini", "claude", "codex", "muse", "opencode") }
 
     foreach ($currentTool in $tools) {
         switch ($currentTool) {
@@ -23,6 +23,12 @@ function Get-BackupRoots {
             "codex" {
                 $roots.Add((Join-Path $HOME ".codex"))
                 $roots.Add((Join-Path $HOME ".agents"))
+            }
+            "muse" {
+                $roots.Add((Join-Path $HOME ".config\muse"))
+            }
+            "opencode" {
+                $roots.Add((Join-Path $HOME ".config\opencode"))
             }
         }
     }
